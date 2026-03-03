@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
 import WorldMap from './components/WorldMap';
 import CountryOverlay from './components/CountryOverlay';
+import sampleVideos from './assets/sample_video';
 
 // Dati finti per la demo (MVP)
-const MOCK_VIDEOS = [
-  { id: 1, title: "Roma: Passeggiata al Colosseo", countryCode: "ITA", url: "https://www.youtube.com/watch?v=example1" },
-  { id: 2, title: "Tokyo: Luci di Shibuya", countryCode: "JPN", url: "https://www.youtube.com/watch?v=example2" },
-  { id: 3, title: "NYC: Central Park Tour", countryCode: "USA", url: "https://www.youtube.com/watch?v=example3" },
-  { id: 4, title: "Brasile: Carnevale a Rio", countryCode: "BRA", url: "https://www.youtube.com/watch?v=example4" }
-];
+const MOCK_VIDEOS = sampleVideos;
 
 export default function App() {
   const [selectedCountry, setSelectedCountry] = useState<any>(null);

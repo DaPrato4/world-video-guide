@@ -13,7 +13,7 @@ export default function CountryOverlay({ country, videos, onClose }: CountryOver
     // Filtra i video per il paese selezionato
     const countryCode = country.id;
     const countryName = country.properties.name;
-    const countryVideos = videos.filter(v => v.countryCode === countryCode);
+    const countryVideos = videos.filter(v => v.countryCode == countryCode);
 
     useEffect(() => {
         let countrydata: any = null; 
@@ -26,7 +26,6 @@ export default function CountryOverlay({ country, videos, onClose }: CountryOver
         if (data && data[0]) {
             // Prendiamo la versione PNG della bandiera
             countrydata = data[0];
-            console.log("Dati paese recuperati:", data[0]);
             setFlagUrl(countrydata.flags.png);
         }
         })
@@ -34,9 +33,6 @@ export default function CountryOverlay({ country, videos, onClose }: CountryOver
         
 
     }, []);
-    
-    console.log("Country object:", country);
-    console.log("Country code:", countryCode);
 
     return (
         <div 
