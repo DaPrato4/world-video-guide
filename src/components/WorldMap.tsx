@@ -39,6 +39,7 @@ export default function WorldMap({ geoData, videos, SelectCountry }: WorldMapPro
                         },
                         hover: { 
                         fill: hasVideo ?  getVideoColor(videoNumber, baseColor) : "#262626", 
+                        // stroke: "#00ff33",
                         cursor: hasVideo ? "pointer" : "default" 
                         },
                         pressed: { fill: "#ffff" }

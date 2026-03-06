@@ -47,11 +47,13 @@ export default function CountryOverlay({ country, videos, onClose }: CountryOver
                 <div className="w-2/5 bg-neutral-950 flex flex-col items-center justify-center p-8 text-center">
                 
                 {/* BOX BANDIERA */}
-                <div className="mb-6 w-48 h-32 bg-neutral-900 rounded-lg flex items-center justify-center overflow-hidden border border-neutral-800 shadow-xl">
+                <div className="mb-6 bg-neutral-900 rounded-lg flex items-center justify-center overflow-hidden border border-neutral-800 shadow-xl">
                     {flagUrl ? (
-                    <img src={flagUrl} alt="Bandiera" className="w-full h-full object-cover" />
+                        // L'immagine mantiene il suo aspect ratio grazie a max-w / max-h e object-contain
+                        <img src={flagUrl} alt="Bandiera" className="max-w-full max-h-40 object-contain" />
                     ) : (
-                    <div className="animate-pulse bg-neutral-700 w-full h-full"></div> // Loader mentre carica
+                        // Loader con dimensione ragionevole mentre carica
+                        <div className="animate-pulse bg-neutral-700 h-24 w-48"></div>
                     )}
                 </div>
 
