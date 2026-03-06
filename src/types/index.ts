@@ -8,4 +8,5 @@ export interface Country {
 export interface WorldMapProps {
   videos: any[]; // Dati dei video, con almeno un campo "countryCode" che corrisponde a id
   SelectCountry: (country: Country) => void;
+  OverCountry: Country | null;
 }

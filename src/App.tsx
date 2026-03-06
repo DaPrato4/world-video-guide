@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState} from 'react';
 import WorldMap from './components/WorldMap';
 import CountryOverlay from './components/CountryOverlay';
 import CountryList from './components/CountryList';
@@ -11,6 +11,7 @@ const MOCK_VIDEOS = sampleVideos;
 
 export default function App() {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [overCountry, setOverCountry] = useState<Country | null>(null);
 
 
   return (
@@ -29,11 +30,13 @@ export default function App() {
 
         <CountryList 
           SelectCountry={setSelectedCountry} 
+          SetOverCountry={setOverCountry}
         />
 
         <WorldMap
           videos={MOCK_VIDEOS}
           SelectCountry={setSelectedCountry} 
+          OverCountry={overCountry}
         />
 
         {/* OVERLAY MODALE (SPLIT SCREEN) */}

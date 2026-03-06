@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import type { Country } from "../types";
 
-export default function CountryList({SelectCountry} : {SelectCountry: (country: Country) => void}) {
+interface CountryListProps {
+    SelectCountry: (country: Country) => void
+    SetOverCountry: (country: Country) => void
+}
+
+export default function CountryList({SelectCountry, SetOverCountry}: CountryListProps) {
     const [allCountriesData, setAllCountriesData] = useState<any[]>([]); // Per memorizzare i dati di tutti i paesi
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filteredCountries, setFilteredCountries] = useState<any[]>([]); // Per memorizzare i paesi filtrati in base alla ricerca
@@ -41,7 +46,7 @@ export default function CountryList({SelectCountry} : {SelectCountry: (country: 
                 <input 
                     type="text" 
                     placeholder="Cerca un paese..." 
-                    className="bg-neutral-700 text-neutral-400 placeholder:text-neutral-500 border border-neutral-500 border-radius: 0.25rem; focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-1"
+                    className="bg-neutral-700 text-neutral-400 placeholder:text-neutral-500 border border-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-1"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -50,23 +55,34 @@ export default function CountryList({SelectCountry} : {SelectCountry: (country: 
                 {filteredCountries.map((country) => {
                     const key = country.id || country.name?.common || JSON.stringify(country);
                     const displayName = country?.translations?.ita?.common || country?.name?.common || country?.name?.official || "Nome sconosciuto";
-
+                    const id = country.ccn3; // codice numerico
                     return (
                     <li key={key} className="hover:bg-blue-600 cursor-pointer">
                         <span 
-                        className="flex items-center" 
-                        onClick={() => {
-                            const countryData: Country = {
-                            id: country.ccn3, // codice numerico
-                            name: country.name?.common || "Nome sconosciuto",
-                            itName: country?.translations?.ita?.common, // eventuale traduzione italiana
-                            flagUrl: country.flags?.png, // url bandiera PNG
-                            };
-                            SelectCountry(countryData);
-                        }}
+                            className="flex items-center" 
+                            onMouseOver={() => {
+                                const countryData: Country = {
+                                    id: country.ccn3,
+                                    name: country.name?.common || "Nome sconosciuto",
+                                    itName: country?.translations?.ita?.common,
+                                    flagUrl: country.flags?.png,
+                                };
+                                SetOverCountry(countryData)
+                            }}
+                            onMouseLeave={() => SetOverCountry(null as any)}
+                            onClick={() => {
+                                const countryData: Country = {
+                                    id: country.ccn3,
+                                    name: country.name?.common || "Nome sconosciuto",
+                                    itName: country?.translations?.ita?.common,
+                                    flagUrl: country.flags?.png,
+                                };
+                                SelectCountry(countryData);
+                            }}
                         >
                         <img src={country.flags?.png} alt={displayName} className="w-8 h-6 mr-2" />
                         {displayName}
+                        {id}
                         </span>
                     </li>
                     );

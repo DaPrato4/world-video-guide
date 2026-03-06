@@ -2,7 +2,7 @@ import { ComposableMap, Geographies, Geography } from "@vnedyalk0v/react19-simpl
 import { useEffect, useState } from "react";
 import type{ Country, WorldMapProps } from "../types";
 
-export default function WorldMap({videos, SelectCountry}: WorldMapProps) {
+export default function WorldMap({videos, SelectCountry, OverCountry}: WorldMapProps) {
 
     const [geoData, setGeoData] = useState<any>(null);
     const baseColor = "blue"; // Puoi scegliere un colore di base per la scala
@@ -30,33 +30,35 @@ export default function WorldMap({videos, SelectCountry}: WorldMapProps) {
         SelectCountry(country);
     };
 
+    
+
     return (
         <>
         <ComposableMap projectionConfig={{ scale: 160 }} className="w-full h-full">
             <Geographies geography={geoData}>
             {({ geographies }) =>
                 geographies.map((geo, index) => {
-                const countryCode = geo.id;
+                const countryCode = geo.id || 0-index;
                 const videoNumber = videos.filter(v => v.countryCode == countryCode).length;
                 const hasVideo = videoNumber > 0;
+                const isOver = OverCountry?.id == countryCode;
+                {isOver? console.log("stai passando sopra:", geo.properties.name) : null}
                 return (
                     <Geography
-                    key={`${countryCode}-${index}`}
+                    key={`${countryCode}`}
                     geography={geo}
                     onClick={() => handleCountryClick(geo)}
                     className="outline-none transition-colors duration-200"
                     style={{
                         default: { 
-                        fill: hasVideo ? getVideoColor(videoNumber, baseColor) : "#262626", 
-                        stroke: "#171717",
-                        strokeWidth: 0.5
+                            strokeWidth: 0.5,
+                            fill: OverCountry?.id == countryCode ? "#fff" : hasVideo ? getVideoColor(videoNumber, baseColor) : "#262626",
                         },
                         hover: { 
-                        fill: hasVideo ?  getVideoColor(videoNumber, baseColor) : "#262626", 
-                        // stroke: "#00ff33",
-                        cursor: hasVideo ? "pointer" : "default" 
+                            fill: hasVideo ?  "#fff" : "#262626", 
+                            cursor: hasVideo ? "pointer" : "default" 
                         },
-                        pressed: { fill: "#ffff" }
+                        pressed: { fill: "#fff" }
                     }}
                     />
                 );
