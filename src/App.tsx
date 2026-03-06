@@ -1,31 +1,17 @@
 import { useState, useEffect } from 'react';
 import WorldMap from './components/WorldMap';
 import CountryOverlay from './components/CountryOverlay';
+import CountryList from './components/CountryList';
+
 import sampleVideos from './assets/sample_video';
+import type { Country } from './types';
 
 // Dati finti per la demo (MVP)
 const MOCK_VIDEOS = sampleVideos;
 
 export default function App() {
-  const [selectedCountry, setSelectedCountry] = useState<any>(null);
-  const [geoData, setGeoData] = useState<any>(null);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
-  // Fetch dei dati della mappa al primo caricamento
-  useEffect(() => {
-    fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json")
-      .then(res => res.json())
-      .then(data => setGeoData(data))
-      .catch(err => console.error("Errore caricamento GeoJSON:", err));
-  }, []);
-
-  // Schermata di caricamento
-  if (!geoData) {
-    return (
-      <div className="w-screen h-screen bg-neutral-900 flex items-center justify-center text-white">
-        Caricamento mappa...
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col w-screen h-screen bg-neutral-900 text-white overflow-hidden font-sans">
@@ -40,10 +26,13 @@ export default function App() {
 
       {/* MAIN CONTENT / MAP AREA */}
       <main className="flex-1 relative bg-[#111] overflow-auto">
-        
-        <WorldMap 
-          geoData={geoData} 
-          videos={MOCK_VIDEOS} 
+
+        <CountryList 
+          SelectCountry={setSelectedCountry} 
+        />
+
+        <WorldMap
+          videos={MOCK_VIDEOS}
           SelectCountry={setSelectedCountry} 
         />
 

@@ -1,19 +1,33 @@
 import { ComposableMap, Geographies, Geography } from "@vnedyalk0v/react19-simple-maps";
+import { useEffect, useState } from "react";
+import type{ Country, WorldMapProps } from "../types";
 
-interface WorldMapProps {
-  geoData: any;
-  videos: any[];
-  SelectCountry: (country: any) => void;
-}
+export default function WorldMap({videos, SelectCountry}: WorldMapProps) {
 
-export default function WorldMap({ geoData, videos, SelectCountry }: WorldMapProps) {
-
+    const [geoData, setGeoData] = useState<any>(null);
     const baseColor = "blue"; // Puoi scegliere un colore di base per la scala
+
+    useEffect(() => {
+    fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json")
+        .then(res => res.json())
+        .then(data => setGeoData(data))
+        .catch(err => console.error("Errore caricamento GeoJSON:", err));
+    }, []);
+
+    if (!geoData) {
+        return (
+        <div className="w-screen h-screen bg-neutral-900 flex items-center justify-center text-white">
+            Caricamento mappa...
+        </div>
+        );
+    }
   
     const handleCountryClick = (geo: any) => {
-        const countryName = geo.properties.name;
-        console.log(countryName);
-        SelectCountry(geo);
+        const country : Country = {
+            id: geo.id,
+            name: geo.properties.name,
+        };
+        SelectCountry(country);
     };
 
     return (

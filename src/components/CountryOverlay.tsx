@@ -8,11 +8,12 @@ interface CountryOverlayProps {
 }
 
 export default function CountryOverlay({ country, videos, onClose }: CountryOverlayProps) {
+    console.log("CountryOverlay render", { country, videos });
     const [flagUrl, setFlagUrl] = useState<string>("");
 
     // Filtra i video per il paese selezionato
     const countryCode = country.id;
-    const countryName = country.properties.name;
+    const countryName = country.itName || country.name || "Nome sconosciuto";
     const countryVideos = videos.filter(v => v.countryCode == countryCode);
 
     useEffect(() => {
