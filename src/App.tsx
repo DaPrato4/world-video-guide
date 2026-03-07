@@ -31,10 +31,12 @@ export default function App() {
         <CountryList 
           SelectCountry={setSelectedCountry} 
           SetOverCountry={setOverCountry}
+          SelectedCountry={selectedCountry}
         />
 
         <WorldMap
           videos={MOCK_VIDEOS}
+          SelectedCountry={selectedCountry}
           SelectCountry={setSelectedCountry} 
           OverCountry={overCountry}
         />

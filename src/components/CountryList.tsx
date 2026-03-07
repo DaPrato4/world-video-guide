@@ -4,16 +4,17 @@ import type { Country } from "../types";
 interface CountryListProps {
     SelectCountry: (country: Country) => void
     SetOverCountry: (country: Country) => void
+    SelectedCountry: Country | null
 }
 
-export default function CountryList({SelectCountry, SetOverCountry}: CountryListProps) {
+export default function CountryList({SelectCountry, SetOverCountry, SelectedCountry}: CountryListProps) {
     const [allCountriesData, setAllCountriesData] = useState<any[]>([]); // Per memorizzare i dati di tutti i paesi
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filteredCountries, setFilteredCountries] = useState<any[]>([]); // Per memorizzare i paesi filtrati in base alla ricerca
 
     // Fetch di tutte le bandiere e stati
     useEffect(() => {
-        fetch("https://restcountries.com/v3.1/all?fields=name,flags,ccn3,translations")
+        fetch("https://restcountries.com/v3.1/all?fields=name,flags,ccn3,translations,capitalInfo")
         .then(res => res.json())
         .then(data => {
             // Processare i dati delle bandiere e degli stati
@@ -36,7 +37,37 @@ export default function CountryList({SelectCountry, SetOverCountry}: CountryList
         return candidates.some((n:any) => n.includes(term));
         });
         setFilteredCountries(filteredCountries);
-    }, [searchTerm]);
+    }, [searchTerm, allCountriesData]);
+
+    // Quando cambia SelectedCountry, aggiorna i suoi dati completi (bandiera, nome italiano, coordinate)
+    useEffect(() => {
+        if (!SelectedCountry || allCountriesData.length === 0) return;
+
+        const found = allCountriesData.find(c => c.ccn3 === SelectedCountry.id);
+        if (!found) return;
+
+        const latlng = found?.capitalInfo?.latlng;
+        const coordinates =
+            Array.isArray(latlng) && latlng.length === 2
+                ? [latlng[0], latlng[1]] // [lng, lat]
+                : undefined;
+
+        const nextCountry: Country = {
+            ...SelectedCountry,
+            flagUrl: found.flags?.png,
+            itName: found?.translations?.ita?.common,
+            coordinates: coordinates as any,
+        };
+
+        const same =
+            SelectedCountry.flagUrl === nextCountry.flagUrl &&
+            SelectedCountry.itName === nextCountry.itName &&
+            JSON.stringify(SelectedCountry.coordinates) === JSON.stringify(nextCountry.coordinates);
+
+        if (!same) {
+            SelectCountry(nextCountry);
+        }
+    }, [SelectedCountry, allCountriesData, SelectCountry]);
 
     return (
         <>

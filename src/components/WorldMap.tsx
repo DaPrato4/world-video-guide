@@ -1,8 +1,8 @@
-import { ComposableMap, Geographies, Geography } from "@vnedyalk0v/react19-simple-maps";
+import { ComposableMap, Geographies, Geography, ZoomableGroup} from "@vnedyalk0v/react19-simple-maps";
 import { useEffect, useState } from "react";
 import type{ Country, WorldMapProps } from "../types";
 
-export default function WorldMap({videos, SelectCountry, OverCountry}: WorldMapProps) {
+export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCountry}: WorldMapProps) {
 
     const [geoData, setGeoData] = useState<any>(null);
     const baseColor = "blue"; // Puoi scegliere un colore di base per la scala
@@ -30,41 +30,51 @@ export default function WorldMap({videos, SelectCountry, OverCountry}: WorldMapP
         SelectCountry(country);
     };
 
-    
-
     return (
         <>
-        <ComposableMap projectionConfig={{ scale: 160 }} className="w-full h-full">
-            <Geographies geography={geoData}>
-            {({ geographies }) =>
-                geographies.map((geo, index) => {
-                const countryCode = geo.id || 0-index;
-                const videoNumber = videos.filter(v => v.countryCode == countryCode).length;
-                const hasVideo = videoNumber > 0;
-                const isOver = OverCountry?.id == countryCode;
-                {isOver? console.log("stai passando sopra:", geo.properties.name) : null}
-                return (
-                    <Geography
-                    key={`${countryCode}`}
-                    geography={geo}
-                    onClick={() => handleCountryClick(geo)}
-                    className="outline-none transition-colors duration-200"
-                    style={{
-                        default: { 
-                            strokeWidth: 0.5,
-                            fill: OverCountry?.id == countryCode ? "#fff" : hasVideo ? getVideoColor(videoNumber, baseColor) : "#262626",
-                        },
-                        hover: { 
-                            fill: hasVideo ?  "#fff" : "#262626", 
-                            cursor: hasVideo ? "pointer" : "default" 
-                        },
-                        pressed: { fill: "#fff" }
-                    }}
-                    />
-                );
-                })
-            }
-            </Geographies>
+        <ComposableMap projectionConfig={{ scale: 160 }} className="w-full h-full touch-none">
+            <ZoomableGroup 
+                zoom={SelectedCountry ? 8 : 1} 
+                center={SelectedCountry?.coordinates ? [SelectedCountry.coordinates[1] as any, SelectedCountry.coordinates[0] as any] : undefined}
+                // CONFIGURAZIONE PER BLOCCARE L'UTENTE:
+                maxZoom={1} // Impedisce di zoomare oltre quello che decidi tu
+                minZoom={1} // Impedisce di rimpicciolire
+                filterZoomEvent={() => false} // Disabilita la rotellina del mouse
+                onMoveStart={() => {}} // Ignora tentativi di trascinamento
+                onMoveEnd={() => {}}
+                className="transition-all duration-1000 ease-in-out touch-none" 
+            >
+                <Geographies geography={geoData}>
+                {({ geographies }) =>
+                    geographies.map((geo, index) => {
+                    const countryCode = geo.id || 0-index;
+                    const videoNumber = videos.filter(v => v.countryCode == countryCode).length;
+                    const hasVideo = videoNumber > 0;
+                    const isOver = OverCountry?.id == countryCode;
+                    {isOver? console.log("stai passando sopra:", geo.properties.name) : null}
+                    return (
+                        <Geography
+                        key={`${countryCode}`}
+                        geography={geo}
+                        onClick={() => handleCountryClick(geo)}
+                        className="outline-none transition-colors duration-200"
+                        style={{
+                            default: { 
+                                strokeWidth: 0.5,
+                                fill: OverCountry?.id == countryCode || SelectedCountry?.id == countryCode ? "#fff" : hasVideo ? getVideoColor(videoNumber, baseColor) : "#262626",
+                            },
+                            hover: { 
+                                fill: hasVideo ?  "#fff" : "#262626", 
+                                cursor: hasVideo ? "pointer" : "default" 
+                            },
+                            pressed: { fill: "#fff" }
+                        }}
+                        />
+                    );
+                    })
+                }
+                </Geographies>
+            </ZoomableGroup>
         </ComposableMap>
         <p className="absolute bottom-4 left-4 text-xs text-neutral-500">
             Dati geografici da Natural Earth | Video demo fittizi
