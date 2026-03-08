@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
     "@vnedyalk0v/react19-simple-maps": "^2.0.2",
+    "firebase": "^12.10.0",
     "motion": "^12.35.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

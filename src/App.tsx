@@ -1,17 +1,53 @@
-import { useState} from 'react';
+import { useEffect, useState} from 'react';
 import WorldMap from './components/WorldMap';
 import CountryOverlay from './components/CountryOverlay';
 import CountryList from './components/CountryList';
+import { db } from "./firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
-import sampleVideos from './assets/sample_video';
-import type { Country } from './types';
+import type { Country, video } from './types';
 
-// Dati finti per la demo (MVP)
-const MOCK_VIDEOS = sampleVideos;
 
 export default function App() {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [overCountry, setOverCountry] = useState<Country | null>(null);
+  const [videos, setVideos] = useState<video[]>([]);
+
+  useEffect(() => {
+    // Riferimento alla collezione "videos" su Firebase
+    const videosRef = collection(db, "videos");
+
+    // onSnapshot è magico: se aggiungi un video dal sito di Firebase, 
+    // la tua mappa si aggiornerà DA SOLA in tempo reale senza ricaricare la pagina!
+    const unsubscribe = onSnapshot(videosRef, async (snapshot) => {
+      const videoList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as video[];
+
+      const enrichedVideos = await Promise.all(
+        videoList.map(async (element) => {
+          try {
+            const res = await fetch(`https://www.youtube.com/oembed?url=${element.url}&format=json`);
+            const data = await res.json();
+
+            return {
+              ...element,
+              title: data.title,
+              thumbnail: data.thumbnail_url,
+            };
+          } catch (err) {
+            console.error("Errore recupero titolo video:", err);
+            return element;
+          }
+        })
+      );
+
+      setVideos(enrichedVideos);
+    });
+
+    return () => unsubscribe(); // Pulizia quando il componente viene smontato
+  }, []);
 
 
   return (
@@ -35,7 +71,7 @@ export default function App() {
         />
 
         <WorldMap
-          videos={MOCK_VIDEOS}
+          videos={videos}
           SelectedCountry={selectedCountry}
           SelectCountry={setSelectedCountry} 
           OverCountry={overCountry}
@@ -45,7 +81,7 @@ export default function App() {
         {selectedCountry && (
           <CountryOverlay 
             country={selectedCountry} 
-            videos={MOCK_VIDEOS} 
+            videos={videos.filter(v => v.countryCode == Number(selectedCountry.id))} 
             onClose={() => setSelectedCountry(null)} 
           />
         )}

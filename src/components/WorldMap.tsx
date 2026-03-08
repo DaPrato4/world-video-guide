@@ -5,7 +5,7 @@ import type{ Country, WorldMapProps } from "../types";
 export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCountry}: WorldMapProps) {
 
     const [geoData, setGeoData] = useState<any>(null);
-    const baseColor = "blue"; // Puoi scegliere un colore di base per la scala
+    const baseColor = "purple"; // Puoi scegliere un colore di base per la scala
 
     useEffect(() => {
     fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json")
