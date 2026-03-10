@@ -34,7 +34,7 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
         <>
         <ComposableMap projectionConfig={{ scale: 160 }} className="w-full h-full touch-none">
             <ZoomableGroup 
-                zoom={SelectedCountry ? 8 : 1} 
+                zoom={SelectedCountry?.coordinates ? 8 : 1} 
                 center={SelectedCountry?.coordinates ? [SelectedCountry.coordinates[1] as any, SelectedCountry.coordinates[0] as any] : undefined}
                 // CONFIGURAZIONE PER BLOCCARE L'UTENTE:
                 maxZoom={1} // Impedisce di zoomare oltre quello che decidi tu

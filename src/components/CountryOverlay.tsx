@@ -10,9 +10,11 @@ interface CountryOverlayProps {
   country: any;
   videos: video[];
   onClose: () => void;
+  user: any;
+  onLogin: () => void;
 }
 
-export default function CountryOverlay({ country, videos, onClose }: CountryOverlayProps) {
+export default function CountryOverlay({ country, videos, onClose, user, onLogin }: CountryOverlayProps) {
     const [flagUrl, setFlagUrl] = useState<string>("");
     const [isSuggestOverlayOpen, setIsSuggestOverlayOpen] = useState(false);
 
@@ -45,7 +47,7 @@ export default function CountryOverlay({ country, videos, onClose }: CountryOver
             // Salviamo solo i due dati fondamentali
             await addDoc(collection(db, "videos"), {
             url: videoUrl,
-            countryCode: countryCode,  // es. 380
+            countryCode: Number(countryCode),  // es. 380
             createdAt: new Date()      // utile per l'ordinamento
             });
 
@@ -116,15 +118,32 @@ export default function CountryOverlay({ country, videos, onClose }: CountryOver
 
                     {/* Pulsanti Azione in basso alla Sidebar */}
                     <div className="p-4 space-y-2">
-                        <button 
-                            onClick={() => {setIsSuggestOverlayOpen(true)}}
-                            className="w-full py-3 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
-                        >
-                            ➕ SUGGERISCI VIDEO
-                        </button>
+                        {/* LOGICA CONDIZIONALE: Se c'è l'utente mostra SUGGERISCI, altrimenti mostra ACCEDI */}
+                        {user ? (
+                            <>
+                                <p className="text-[10px] text-center text-neutral-500">
+                                    Loggato come {user.displayName}
+                                </p>
+                                <button 
+                                    onClick={() => setIsSuggestOverlayOpen(true)}
+                                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all border border-blue-500/20 flex items-center justify-center gap-2"
+                                >
+                                    ➕ SUGGERISCI VIDEO
+                                </button>
+                                
+                            </>
+                        ) : (
+                            <button 
+                                onClick={onLogin}
+                                className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
+                            >
+                                👤 ACCEDI PER SUGGERIRE
+                            </button>
+                        )}
+
                         <button 
                             onClick={onClose}
-                            className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 text-xs font-bold rounded-xl transition-all border border-red-600/20"
+                            className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 text-xs font-bold rounded-xl transition-all border border-red-600/20 mt-2"
                         >
                             CHIUDI MAPPA
                         </button>
