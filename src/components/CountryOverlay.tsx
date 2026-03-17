@@ -5,6 +5,7 @@ import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
+import Alert from "./Alert";
 
 interface CountryOverlayProps {
   country: any;
@@ -14,14 +15,48 @@ interface CountryOverlayProps {
   onLogin: () => void;
 }
 
-export default function CountryOverlay({ country, videos, onClose, user, onLogin }: CountryOverlayProps) {
+export default function CountryOverlay({ country, videos : videosWithoutMetadata, onClose, user, onLogin }: CountryOverlayProps) {
     const [flagUrl, setFlagUrl] = useState<string>("");
     const [isSuggestOverlayOpen, setIsSuggestOverlayOpen] = useState(false);
+    const [videos, setVideos] = useState<video[]>(videosWithoutMetadata ?? []);
+    const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
     const countryCode = country.id;
     const countryName = country.itName || country.name || "Nome sconosciuto";
     const countryVideos = videos;
 
+    // Quando il componente si monta, recupera titolo e thumbnail per ciascuno usando l'endpoint oEmbed di YouTube
+    useEffect(() => {
+        // Aggiorna i metadati dei video (titolo e thumbnail) usando l'endpoint oEmbed di YouTube
+        if (!videosWithoutMetadata || videosWithoutMetadata.length === 0) return;
+
+        (async () => {
+            try {
+                const updated = await Promise.all(
+                    (videosWithoutMetadata ?? []).map(async (element) => {
+                        try {
+                            const res = await fetch(`https://www.youtube.com/oembed?url=${element.url}&format=json`);
+                            const data = await res.json();
+
+                            return {
+                                ...element,
+                                title: data.title,
+                                thumbnail: data.thumbnail_url,
+                            } as video;
+                        } catch (err) {
+                            console.error("Errore recupero titolo video:", err);
+                            return element;
+                        }
+                    })
+                );
+
+                setVideos(updated);
+            } catch (err) {
+                console.error("Errore aggiornamento metadati video:", err);
+            }
+        })();
+
+    }, []);
 
     // Quando il componente si monta o quando cambia il paese, recupera la bandiera
     useEffect(() => {
@@ -50,15 +85,28 @@ export default function CountryOverlay({ country, videos, onClose, user, onLogin
             countryCode: Number(countryCode),  // es. 380
             createdAt: new Date()      // utile per l'ordinamento
             });
-
-            alert("Video salvato nel database!");
+            // Mostra alert di successo
+            setAlert({ type: "success", message: "Video suggerito con successo! Verrà revisionato a breve." });
         } catch (error) {
-            console.error("Errore salvataggio:", error);
+            // Mostra alert di errore
+            setAlert({ type: "error", message: "Errore nel suggerire il video. Riprova più tardi." });
+            console.error("Errore aggiunta video:", error);
         }
     };
 
     return (
         <>
+        <AnimatePresence>
+            {alert && (
+                <Alert
+                    key="global-alert"
+                    type={alert.type}
+                    message={alert.message}
+                    duration={4000}
+                    onClose={() => setAlert(null)}
+                />
+            )}
+        </AnimatePresence>
         <motion.div 
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }} 
             animate={{ opacity: 1, backdropFilter: "blur(1px)" }} 
