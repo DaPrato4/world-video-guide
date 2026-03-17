@@ -12,7 +12,7 @@ import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from
 import type { Country, video } from './types';
 
 import { FaRegUserCircle } from "react-icons/fa";
-
+import { TbWorldSearch } from "react-icons/tb";
 
 
 export default function App() {
@@ -79,13 +79,27 @@ export default function App() {
 
   return (
     <div className="flex flex-col w-screen h-screen bg-neutral-900 text-white overflow-hidden font-sans">
-      
+
       {/* HEADER */}
-      <header className="py-6 px-4 bg-neutral-800 border-b border-neutral-700 text-center shadow-lg z-10 flex flex-row items-center justify-around">
-        <h1 className="text-3xl font-bold tracking-widest text-blue-500">
-          🌍 WORLD VIDEO GUIDE
-        </h1>
+      <header className="py-6 px-4 bg-neutral-800 border-b border-neutral-700 text-center shadow-lg z-10 flex flex-row items-center justify-around gap-4">
+        
+      <div>
+
+        <span className='flex flex-row gap-3 text-blue-500'>
+          <TbWorldSearch className='h-auto w-8'/>
+          <h1 className="text-3xl font-bold tracking-widest text-blue-500">
+            WORLD GUIDE
+          </h1>
+        </span>
         <p className="text-neutral-400 mt-1">Seleziona un paese evidenziato per vedere i contenuti</p>
+      </div>
+        
+        <CountryList 
+          SelectCountry={setSelectedCountry} 
+          SetOverCountry={setOverCountry}
+          SelectedCountry={selectedCountry}
+        />
+
 
         {/* Simple auth UI: mostra login/logout e nome utente (minima integrazione) */}
         <div className="mt-3 flex justify-center gap-3">
@@ -109,11 +123,11 @@ export default function App() {
       {/* MAIN CONTENT / MAP AREA */}
       <main className="flex-1 relative bg-[#111] overflow-auto">
 
-        <CountryList 
+        {/* <CountryList 
           SelectCountry={setSelectedCountry} 
           SetOverCountry={setOverCountry}
           SelectedCountry={selectedCountry}
-        />
+        /> */}
 
         <WorldMap
           videos={videos}

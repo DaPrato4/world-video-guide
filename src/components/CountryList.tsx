@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Country } from "../types";
 
 interface CountryListProps {
@@ -70,56 +71,74 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
     }, [SelectedCountry, allCountriesData, SelectCountry]);
 
     return (
-        <>
-            <div className="absolute top-4 right-4 bg-neutral-800/80 backdrop-blur-sm rounded-lg p-4 max-h-96 overflow-y-auto shadow-lg border border-neutral-700 z-20 w-100 flex flex-col items-center justify-center">
-                <div className="flex flex-row items-center justify-around w-full">
-                <h2 className="text-lg font-semibold m-0">Cerca stato</h2>
+        <div className="relative z-50 w-3/5"> 
+            {/* CONTENITORE RICERCA */}
+            <div className="bg-neutral-800/90 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-white/10 flex items-center gap-3">
+                <span className="text-neutral-500 text-lg">🔍</span>
                 <input 
                     type="text" 
                     placeholder="Cerca un paese..." 
-                    className="bg-neutral-700 text-neutral-400 placeholder:text-neutral-500 border border-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 px-2 py-1"
+                    className="bg-transparent text-white placeholder:text-neutral-500 flex-1 focus:outline-none text-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                </div>
-                <ul className="text-sm space-y-1 flex-1 w-full overflow-y-auto">
-                {filteredCountries.map((country) => {
-                    const key = country.id || country.name?.common || JSON.stringify(country);
-                    const displayName = country?.translations?.ita?.common || country?.name?.common || country?.name?.official || "Nome sconosciuto";
-                    const id = country.ccn3; // codice numerico
-                    return (
-                    <li key={key} className="hover:bg-blue-600 cursor-pointer">
-                        <span 
-                            className="flex items-center" 
-                            onMouseOver={() => {
-                                const countryData: Country = {
-                                    id: country.ccn3,
-                                    name: country.name?.common || "Nome sconosciuto",
-                                    itName: country?.translations?.ita?.common,
-                                    flagUrl: country.flags?.png,
-                                };
-                                SetOverCountry(countryData)
-                            }}
-                            onMouseLeave={() => SetOverCountry(null as any)}
-                            onClick={() => {
-                                const countryData: Country = {
-                                    id: country.ccn3,
-                                    name: country.name?.common || "Nome sconosciuto",
-                                    itName: country?.translations?.ita?.common,
-                                    flagUrl: country.flags?.png,
-                                };
-                                SelectCountry(countryData);
-                            }}
-                        >
-                        <img src={country.flags?.png} alt={displayName} className="w-8 h-6 mr-2" />
-                        {displayName}
-                        {id}
-                        </span>
-                    </li>
-                    );
-                })}
-                </ul>
             </div>
-        </>
+
+            {/* MENU RISULTATI (Stile Amazon) */}
+            {searchTerm.trim() !== "" && (
+                <>
+                <ul 
+                    className="absolute w-full bg-neutral-800/95 backdrop-blur-xl rounded-xl mt-2 max-h-80 overflow-y-auto shadow-2xl border border-white/10 custom-scrollbar overflow-x-hidden"
+                >
+                        {filteredCountries.length > 0 ? (
+                            filteredCountries.map((country) => {
+                                const displayName = country?.translations?.ita?.common || country?.name?.common;
+                                return (
+                                    <li 
+                                        key={country.ccn3} 
+                                        className="group flex items-center gap-3 px-4 py-3 hover:bg-blue-600 transition-colors cursor-pointer border-b border-white/5 last:border-0"
+                                        onClick={() => {
+                                            const countryData: Country = {
+                                                id: country.ccn3,
+                                                name: country.name?.common,
+                                                itName: country?.translations?.ita?.common,
+                                                flagUrl: country.flags?.png,
+                                            };
+                                            SelectCountry(countryData);
+                                            SetOverCountry(null as any);
+                                            setSearchTerm(""); // Pulisce come Amazon
+                                        }}
+                                        onMouseEnter={() => SetOverCountry({ id: country.ccn3 } as any)}
+                                        onMouseLeave={() => SetOverCountry(null as any)}
+                                    >
+                                        <img src={country.flags?.png} alt="pu" className="w-8 h-5 object-cover rounded shadow-sm group-hover:scale-110 transition-transform" />
+                                        <span className="text-sm font-medium text-neutral-200 group-hover:text-white">
+                                            {displayName}
+                                        </span>
+                                    </li>
+                                );
+                            })
+                        ) : (
+                            <li className="px-4 py-8 text-center text-neutral-500 text-sm">
+                                🏜️ Nessun paese trovato
+                            </li>
+                        )}
+                    </ul>
+                    {typeof document !== "undefined" && createPortal(
+                        <div className="fixed inset-0 bg-black/65">
+                            <div
+                                className="w-full h-full"
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => setSearchTerm("")}
+                                onKeyDown={(e) => { if (e.key === "Enter") setSearchTerm(""); }}
+                                aria-label="clear-search-overlay"
+                            />
+                        </div>,
+                        document.body
+                    )}
+                    </>
+                )}
+            </div>
     );
 }
