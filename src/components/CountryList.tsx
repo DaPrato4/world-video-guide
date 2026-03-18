@@ -6,26 +6,16 @@ interface CountryListProps {
     SelectCountry: (country: Country) => void
     SetOverCountry: (country: Country) => void
     SelectedCountry: Country | null
+    countriesData: any[]
 }
 
-export default function CountryList({SelectCountry, SetOverCountry, SelectedCountry}: CountryListProps) {
-    const [allCountriesData, setAllCountriesData] = useState<any[]>([]); // Per memorizzare i dati di tutti i paesi
+export default function CountryList({SelectCountry, SetOverCountry, SelectedCountry, countriesData}: CountryListProps) {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filteredCountries, setFilteredCountries] = useState<any[]>([]); // Per memorizzare i paesi filtrati in base alla ricerca
 
-    // Fetch di tutte le bandiere e stati
-    useEffect(() => {
-        fetch("https://restcountries.com/v3.1/all?fields=name,flags,ccn3,translations,capitalInfo")
-        .then(res => res.json())
-        .then(data => {
-            // Processare i dati delle bandiere e degli stati
-            setAllCountriesData(data);
-        })
-        .catch(err => console.error("Errore caricamento dati paesi:", err));
-    }, []);
     
     useEffect(() => {
-        const filteredCountries = allCountriesData.filter((country) => {
+        const filteredCountries = countriesData.filter((country: { translations: { ita: { common: any; }; }; name: { common: any; official: any; }; }) => {
         const term = searchTerm.trim().toLowerCase();
         if (term == '') return null;
 
@@ -38,13 +28,12 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
         return candidates.some((n:any) => n.includes(term));
         });
         setFilteredCountries(filteredCountries);
-    }, [searchTerm, allCountriesData]);
+    }, [searchTerm, countriesData]);
 
     // Quando cambia SelectedCountry, aggiorna i suoi dati completi (bandiera, nome italiano, coordinate)
     useEffect(() => {
-        if (!SelectedCountry || allCountriesData.length === 0) return;
-
-        const found = allCountriesData.find(c => c.ccn3 === SelectedCountry.id);
+        if (!SelectedCountry || countriesData.length === 0) return;
+        const found = countriesData.find(c => c.ccn3 === SelectedCountry.id);
         if (!found) return;
 
         const latlng = found?.capitalInfo?.latlng;
@@ -68,7 +57,7 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
         if (!same) {
             SelectCountry(nextCountry);
         }
-    }, [SelectedCountry, allCountriesData, SelectCountry]);
+    }, [SelectedCountry, countriesData, SelectCountry]);
 
     return (
         <div className="relative z-50 w-3/5"> 
@@ -103,15 +92,21 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
                                                 name: country.name?.common,
                                                 itName: country?.translations?.ita?.common,
                                                 flagUrl: country.flags?.png,
+                                                coordinates: country.capitalInfo.latlng,
+                                                capitalName: country.capital
                                             };
                                             SelectCountry(countryData);
                                             SetOverCountry(null as any);
-                                            setSearchTerm(""); // Pulisce come Amazon
+                                            setSearchTerm("");
+                                            console.log("Paese selezionato:", country);
                                         }}
-                                        onMouseEnter={() => SetOverCountry({ id: country.ccn3 } as any)}
+                                        onMouseEnter={() => {SetOverCountry({ id: country.ccn3, coordinates: country.capitalInfo.latlng, capitalName: country.capital } as Country) 
+                                        console.log("Stai passando sopra:", country.capitalInfo.latlng)}}
                                         onMouseLeave={() => SetOverCountry(null as any)}
                                     >
-                                        <img src={country.flags?.png} alt="pu" className="w-8 h-5 object-cover rounded shadow-sm group-hover:scale-110 transition-transform" />
+                                        <span className="w-8 flex justify-center">
+                                            <img src={country.flags?.png} alt={displayName} className="max-w-8 h-5 object-contain rounded-xs shadow-sm group-hover:scale-110 transition-transform" />
+                                        </span>
                                         <span className="text-sm font-medium text-neutral-200 group-hover:text-white">
                                             {displayName}
                                         </span>

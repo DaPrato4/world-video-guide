@@ -1,4 +1,4 @@
-import { useState} from 'react';
+import { useEffect, useState} from 'react';
 import WorldMap from '../components/WorldMap';
 import CountryOverlay from '../components/CountryOverlay';
 import CountryList from '../components/CountryList';
@@ -18,6 +18,31 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [overCountry, setOverCountry] = useState<Country | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const [geoData, setGeoData] = useState(null);
+  const [countriesData, setCountriesData] = useState<Country[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+        fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json")
+            .then(res => res.json()),
+        fetch("https://restcountries.com/v3.1/all?fields=name,flags,ccn3,translations,capitalInfo,languages,region,population,area,capital")
+            .then(res => res.json())
+    ])
+    .then(([geoDataFetch, countriesInfo]) => {
+        console.log("GeoData:", geoDataFetch);
+        console.log("Countries Info:", countriesInfo);
+        
+        // Salva i dati geografici
+        setGeoData(geoDataFetch);
+
+        // Processa i dati dei paesi
+        setCountriesData(countriesInfo);
+        
+
+    })
+    .catch(err => console.error("Errore caricamento dati:", err));
+}, []);
 
   
 
@@ -44,9 +69,8 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
           SelectCountry={setSelectedCountry} 
           SetOverCountry={setOverCountry}
           SelectedCountry={selectedCountry}
+          countriesData={countriesData}
         />
-
-
         
         {user ? (
           <button 
@@ -80,6 +104,8 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
           SelectedCountry={selectedCountry}
           SelectCountry={setSelectedCountry} 
           OverCountry={overCountry}
+          countriesData={countriesData}
+          geoData={geoData}
         />
 
         {/* OVERLAY MODALE (SPLIT SCREEN) */}
@@ -90,6 +116,7 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
             onClose={() => setSelectedCountry(null)} 
             user={user} 
             onLogin={() => setIsLoginOpen(true)}
+            flagUrl={selectedCountry?.flagUrl}
           />
         )}
         

@@ -14,6 +14,7 @@ import {
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaApple } from "react-icons/fa";
 import { IoIosMail } from "react-icons/io";
+import Alert from "./Alert";
 
 
 interface LoginOverlayProps {
@@ -23,6 +24,7 @@ interface LoginOverlayProps {
 
 export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
     const backdropRef = useRef<HTMLDivElement>(null);
+    const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
     const [mode, setMode] = useState<"choose" | "email-login" | "email-register">("choose");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -71,12 +73,13 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
                 provider.addScope("name");
                 await signInWithPopup(auth, provider);
             }
-
+            setAlert({ type: "success", message: "Login effettuato con successo!" });
             setShouldRender(false);
             setTimeout(onClose, 300);
         } catch (err: any) {
             console.error("Auth provider error:", err);
             setError(err?.message || "Errore durante il login");
+            setAlert({ type: "error", message: "Errore durante il login" });
         }
     };
 
@@ -86,9 +89,11 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
             await signInWithEmailAndPassword(auth, email, password);
             setShouldRender(false);
             setTimeout(onClose, 300);
+            setAlert({ type: "success", message: "Login effettuato con successo!" });
         } catch (err: any) {
             console.error("Email login error:", err);
             setError(err?.message || "Errore login con email");
+            setAlert({ type: "error", message: "Errore durante il login" });
         }
     };
 
@@ -108,11 +113,22 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
         }
     };
 
-    return (
+    return (<>
+        <AnimatePresence>
+            {alert && (
+                <Alert
+                    key="global-alert"
+                    type={alert.type}
+                    message={alert.message}
+                    duration={4000}
+                    onClose={() => setAlert(null)}
+                />
+            )}
+        </AnimatePresence>
         <AnimatePresence>
             {shouldRender && (
                 <motion.div 
-                    className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 backdrop-blur-md"
+                    className="fixed inset-0 flex items-center justify-center bg-black/50 z-99 backdrop-blur-md"
                     ref={backdropRef}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -208,5 +224,6 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
                 </motion.div>
             )}
         </AnimatePresence>
+    </>
     );
 }

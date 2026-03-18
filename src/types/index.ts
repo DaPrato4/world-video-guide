@@ -6,6 +6,7 @@ export interface Country {
   itName?: string;    // eventuale traduzione italiana (se diversa da name)
   flagUrl?: string;   // url bandiera PNG
   coordinates?: Coordinates; // latitudine e longitudine
+  capitalName?: string;
 }
 
 export interface WorldMapProps {
@@ -13,6 +14,8 @@ export interface WorldMapProps {
   SelectedCountry: Country | null;
   SelectCountry: (country: Country) => void;
   OverCountry: Country | null;
+  countriesData: any; // Dati geografici dei paesi
+  geoData: any; // Dati geografici
 }
 
 export interface video {

@@ -13,15 +13,14 @@ interface CountryOverlayProps {
   onClose: () => void;
   user: any;
   onLogin: () => void;
+  flagUrl?: string;
 }
 
-export default function CountryOverlay({ country, videos : videosWithoutMetadata, onClose, user, onLogin }: CountryOverlayProps) {
-    const [flagUrl, setFlagUrl] = useState<string>("");
+export default function CountryOverlay({ country, videos : videosWithoutMetadata, onClose, user, onLogin, flagUrl }: CountryOverlayProps) {
     const [isSuggestOverlayOpen, setIsSuggestOverlayOpen] = useState(false);
     const [videos, setVideos] = useState<video[]>(videosWithoutMetadata ?? []);
     const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-    const countryCode = country.id;
     const countryName = country.itName || country.name || "Nome sconosciuto";
     const countryVideos = videos;
 
@@ -57,22 +56,6 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
         })();
 
     }, []);
-
-    // Quando il componente si monta o quando cambia il paese, recupera la bandiera
-    useEffect(() => {
-        let fetchUrl = countryCode 
-            ? `https://restcountries.com/v3.1/alpha/${countryCode}?fullText=true`
-            : `https://restcountries.com/v3.1/name/${countryName}?fullText=true`;
-            
-        fetch(fetchUrl)
-        .then(res => res.json())
-        .then(data => {
-            if (data && data[0]) {
-                setFlagUrl(data[0].flags.png);
-            }
-        })
-        .catch(err => console.error("Errore recupero bandiera:", err));
-    }, [countryCode, countryName]);
 
     // Funzione per aggiungere un nuovo video al database
     const handleAddVideo = async (videoUrl: string, countryCode: number) => {
@@ -117,7 +100,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
             }} 
             transition={{ duration: 1.4, delay: 0 }} 
             
-            className="fixed inset-0 bg-black/70 flex items-center justify-center z-100 p-4"
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
             onClick={onClose}
         >
             <motion.div 
