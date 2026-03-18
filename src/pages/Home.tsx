@@ -2,10 +2,11 @@ import { useState} from 'react';
 import WorldMap from '../components/WorldMap';
 import CountryOverlay from '../components/CountryOverlay';
 import CountryList from '../components/CountryList';
+import LoginOverlay from '../components/LoginOverlay';
 
 //firebase
 import { auth } from "../firebase";
-import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 
 import type { Country, video } from '../types';
 
@@ -16,18 +17,10 @@ import { TbWorldSearch } from "react-icons/tb";
 export default function Home({ user, videos }: { user: any; videos: video[] }) {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [overCountry, setOverCountry] = useState<Country | null>(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   
 
-  // Funzione per fare Login con Google
-  const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Errore durante il login:", error);
-    }
-  };
 
 
   return (
@@ -54,33 +47,33 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
         />
 
 
-        {/* Simple auth UI: mostra login/logout e nome utente (minima integrazione) */}
-        <div className="mt-3 flex justify-center gap-3">
-          {user ? (
-            <>
-              <span className="text-sm text-neutral-300">Ciao, {user.displayName ?? user.email}</span>
-              <button
-                onClick={async () => { try { await signOut(auth); } catch (e) { console.error(e); } }}
-                className="px-3 py-1 bg-neutral-700 rounded"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <button onClick={loginWithGoogle} className="px-3 py-1 bg-blue-500 rounded">Accedi con Google</button>
-          )}
-            <FaRegUserCircle className="text-2xl text-neutral-400" />
-        </div>
+        
+        {user ? (
+          <button 
+            onClick={() => signOut(auth)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all border border-blue-500/20 px-4 py-2"
+          >
+            <FaRegUserCircle className='h-auto w-4'/>
+            {user.displayName || user.email?.split('@')[0] || 'Utente'} (Esci)
+          </button>
+        ) : (
+          <button 
+            onClick={() => setIsLoginOpen(true)}
+            className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all border border-blue-500/20 px-4 py-2"
+          >
+            Accedi o Registrati
+          </button>
+        )}
       </header>
+
+      {/* Login Overlay */}
+      <LoginOverlay
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+      />
 
       {/* MAIN CONTENT / MAP AREA */}
       <main className="flex-1 relative bg-[#111] overflow-auto">
-
-        {/* <CountryList 
-          SelectCountry={setSelectedCountry} 
-          SetOverCountry={setOverCountry}
-          SelectedCountry={selectedCountry}
-        /> */}
 
         <WorldMap
           videos={videos}
@@ -96,7 +89,7 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
             videos={videos.filter(v => v.countryCode == Number(selectedCountry.id))} 
             onClose={() => setSelectedCountry(null)} 
             user={user} 
-            onLogin={loginWithGoogle}
+            onLogin={() => setIsLoginOpen(true)}
           />
         )}
         
