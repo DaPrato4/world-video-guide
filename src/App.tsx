@@ -4,19 +4,66 @@ import Admin from "./pages/Admin";
 import { auth, db } from "./firebase";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import type { video } from "./types";
-import { collection, onSnapshot } from "firebase/firestore";
+import type { user, video } from "./types";
+import { collection, doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
 
 // App.tsx
 export default function App() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<user | null>(null);
   const [videos, setVideos] = useState<video[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Gestione Auth (UNA SOLA VOLTA QUI)
-    const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // 1. L'utente è loggato, andiamo a prendere il suo profilo su Firestore
+        const userDocRef = doc(db, "users", firebaseUser.uid);
+
+        try {
+          const userDocSnap = await getDoc(userDocRef);
+          console.log("User document snapshot:", userDocSnap);
+
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            // 2. Uniamo i dati di Auth con quelli di Firestore (Role, stats, ecc.)
+            console.log("userData:", userData);
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email ?? "",
+              displayName: firebaseUser.displayName ?? "",
+              role: (userData as any).role ?? "user",
+              photoURL: firebaseUser.photoURL ?? "",
+            });
+          } else {
+            // Caso limite: l'utente esiste in Auth ma non ha ancora un documento in Firestore
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email ?? "",
+              displayName: firebaseUser.displayName ?? "",
+              role: "user",
+              photoURL: firebaseUser.photoURL ?? "",
+            });
+            //aggiungiamo user su firestore
+            await setDoc(userDocRef, {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email ?? "",
+              displayName: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "",
+              role: "user",
+            });
+          }
+        } catch (error) {
+          console.error("Errore nel recupero del ruolo:", error);
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email ?? "",
+            displayName: firebaseUser.displayName ?? "",
+            role: "user",
+          });
+        }
+      } else {
+        // L'utente ha fatto logout
+        setUser(null);
+      }
       setLoading(false);
     });
 
@@ -28,6 +75,12 @@ export default function App() {
 
     return () => { unsubscribeAuth(); unsubscribeVideos(); };
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      console.log(user);
+    }
+  }, [user]);
 
   if (loading) return (
   <div className="bg-black h-screen text-white flex items-center justify-center font-bold tracking-widest">

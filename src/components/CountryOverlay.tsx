@@ -66,7 +66,8 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
             await addDoc(collection(db, "videos"), {
             url: videoUrl,
             countryCode: Number(countryCode),  // es. 380
-            createdAt: new Date()      // utile per l'ordinamento
+            createdAt: new Date(),      // utile per l'ordinamento
+            status: "pending"          // Stato iniziale
             });
             // Mostra alert di successo
             setAlert({ type: "success", message: "Video suggerito con successo! Verrà revisionato a breve." });
@@ -200,7 +201,9 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                     <div className="flex-1 overflow-y-auto p-8 pr-4 custom-scrollbar">
                         {countryVideos.length > 0 ? (
                             <div className="grid grid-cols-2 gap-6">
-                                {countryVideos.map(v => (
+                                {countryVideos
+                                    .filter(v => v.status === "approved")
+                                    .map(v => (
                                     <div 
                                         key={v.id} 
                                         className="group bg-neutral-800/40 rounded-2xl overflow-hidden border border-white/5 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg hover:shadow-blue-500/10"
@@ -244,7 +247,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                 countryName={countryName}
                 onClose={() => setIsSuggestOverlayOpen(false)}
                 onSubmit={(url) => {
-                    handleAddVideo(url, country.id); // La tua funzione Firebase
+                    handleAddVideo(url, country.id); // La funzione Firebase
                     setIsSuggestOverlayOpen(false);
                 }}
                 />

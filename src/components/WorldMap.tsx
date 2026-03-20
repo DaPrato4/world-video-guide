@@ -66,7 +66,7 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
                 {({ geographies }) =>
                     geographies.map((geo, index) => {
                     const countryCode = geo.id || 0-index;
-                    const videoNumber = videos.filter(v => v.countryCode == countryCode).length;
+                    const videoNumber = videos.filter(v => v.countryCode == countryCode && v.status === "approved").length;
                     const hasVideo = videoNumber > 0;
                     return (
                         <Geography

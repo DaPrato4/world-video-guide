@@ -8,13 +8,13 @@ import LoginOverlay from '../components/LoginOverlay';
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 
-import type { Country, video } from '../types';
+import type { Country, user, video } from '../types';
 
 import { FaRegUserCircle } from "react-icons/fa";
 import { TbWorldSearch } from "react-icons/tb";
 
 
-export default function Home({ user, videos }: { user: any; videos: video[] }) {
+export default function Home({ user, videos }: { user: user | null; videos: video[] }) {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [overCountry, setOverCountry] = useState<Country | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);

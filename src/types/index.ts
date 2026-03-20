@@ -24,4 +24,13 @@ export interface video {
   countryCode: number; // Codice del paese associato al video (es. "380")
   title?: string; // Titolo del video (opzionale, da recuperare tramite YouTube o simili)
   thumbnail?: string; // URL dell'immagine di anteprima (opzionale)
+  status: "pending" | "approved" | "rejected"; // Stato del video (opzionale)
+}
+
+export interface user{
+  uid: string;
+  email: string;
+  displayName: string;
+  role: "user" | "moderator" | "admin";
+  photoURL?: string; // URL dell'immagine del profilo (opzionale)
 }
