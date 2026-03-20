@@ -50,7 +50,7 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
 
     return (
         <>
-        <ComposableMap projectionConfig={{ scale: 160 }} className="w-full h-full touch-none">
+        <ComposableMap projectionConfig={{ scale: 160 }} className="w-5/6 z-10 h-full touch-none">
             <ZoomableGroup 
                 zoom={SelectedCountry?.coordinates ? 8 : 1} 
                 center={SelectedCountry?.coordinates ? [SelectedCountry.coordinates[1] as any, SelectedCountry.coordinates[0] as any] : undefined}

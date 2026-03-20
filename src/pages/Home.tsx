@@ -23,26 +23,30 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
   const [countriesData, setCountriesData] = useState<Country[]>([]);
 
   useEffect(() => {
-    Promise.all([
-        fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json")
-            .then(res => res.json()),
-        fetch("https://restcountries.com/v3.1/all?fields=name,flags,ccn3,translations,capitalInfo,languages,region,population,area,capital")
-            .then(res => res.json())
-    ])
-    .then(([geoDataFetch, countriesInfo]) => {
-        console.log("GeoData:", geoDataFetch);
-        console.log("Countries Info:", countriesInfo);
-        
-        // Salva i dati geografici
-        setGeoData(geoDataFetch);
+    const fetchGeo = async () => {
+      try {
+        const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json");
+        const geo = await res.json();
+        setGeoData(geo);
+      } catch (err) {
+        console.error("Errore caricamento geoData:", err);
+      }
+    };
 
-        // Processa i dati dei paesi
+    const fetchCountries = async () => {
+      try {
+        const res = await fetch("https://restcountries.com/v3.1/all?fields=name,flags,ccn3,translations,capitalInfo,languages,region,population,area,capital");
+        const countriesInfo = await res.json();
         setCountriesData(countriesInfo);
-        
+      } catch (err) {
+        console.error("Errore caricamento countriesInfo:", err);
+      }
+    };
 
-    })
-    .catch(err => console.error("Errore caricamento dati:", err));
-}, []);
+    // Avvia le due fetch in modo indipendente
+    fetchGeo();
+    fetchCountries();
+  }, []);
 
   
 
@@ -65,12 +69,7 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
         <p className="text-neutral-400 mt-1">Seleziona un paese evidenziato per vedere i contenuti</p>
       </div>
         
-        <CountryList 
-          SelectCountry={setSelectedCountry} 
-          SetOverCountry={setOverCountry}
-          SelectedCountry={selectedCountry}
-          countriesData={countriesData}
-        />
+        
         
         {user ? (
           <button 
@@ -97,7 +96,7 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
       />
 
       {/* MAIN CONTENT / MAP AREA */}
-      <main className="flex-1 relative bg-[#111] overflow-auto">
+      <main className="flex relative bg-[#111] h-full w-full overflow-hidden">
 
         <WorldMap
           videos={videos}
@@ -106,6 +105,13 @@ export default function Home({ user, videos }: { user: any; videos: video[] }) {
           OverCountry={overCountry}
           countriesData={countriesData}
           geoData={geoData}
+        />
+
+        <CountryList 
+          SelectCountry={setSelectedCountry} 
+          SetOverCountry={setOverCountry}
+          SelectedCountry={selectedCountry}
+          countriesData={countriesData}
         />
 
         {/* OVERLAY MODALE (SPLIT SCREEN) */}

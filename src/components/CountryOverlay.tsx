@@ -120,13 +120,13 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                 <aside className="w-1/4 bg-neutral-950 flex flex-col border-r border-white/5">
                     {/* Intestazione Sidebar con Bandiera */}
                     <div className="p-6 flex flex-col items-center border-b border-white/5">
-                        <div className="mb-4 bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center">
                             {flagUrl ? (
-                                <img src={flagUrl} alt="Bandiera" className="max-w-full max-h-30 object-contain" />
+                                <div className="mb-4 bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center">
+                                    <img src={flagUrl} alt="Bandiera" className="max-w-full max-h-30 object-contain" />
+                                </div>
                             ) : (
-                                <div className="animate-pulse bg-neutral-700 h-full w-full"></div>
+                                <div className="mb-4 rounded-xl animate-pulse bg-neutral-700 w-full h-30"></div>
                             )}
-                        </div>
                         <h2 className="text-2xl font-black uppercase tracking-tighter text-white text-center line-clamp-2">
                             {countryName}
                         </h2>
@@ -176,7 +176,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                             onClick={onClose}
                             className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 text-xs font-bold rounded-xl transition-all border border-red-600/20 mt-2"
                         >
-                            CHIUDI MAPPA
+                            CHIUDI
                         </button>
                     </div>
                 </aside>
