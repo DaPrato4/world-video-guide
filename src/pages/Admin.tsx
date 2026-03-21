@@ -22,11 +22,15 @@ export default function Admin({ user }: { user: user | null }) {
           try {
             const d = doc.data() as any;
             const res = await fetch(`https://www.youtube.com/oembed?url=${d.url}&format=json`);
-            const data = await res.json();
+            const datayoutube = await res.json();
+            const rescountry = await fetch(`https://restcountries.com/v3.1/alpha/${d.countryCode}`);
+            const datacountry = await rescountry.json();
             return {
               id: doc.id,
-              thumbnail: data.thumbnail_url,
-              title: data.title,
+              thumbnail: datayoutube.thumbnail_url,
+              title: datayoutube.title,
+              country: datacountry[0].name.common,
+              flag: datacountry[0].flags.png,
               ...d
             } as video;
           } catch (error) {
@@ -36,6 +40,8 @@ export default function Admin({ user }: { user: user | null }) {
               id: doc.id,
               thumbnail: null,
               title: "Video senza titolo",
+              country: "Paese non disponibile",
+              flag: null,
               ...d
             } as video;
           }
@@ -138,21 +144,31 @@ export default function Admin({ user }: { user: user | null }) {
                   >
                     {/* Video Info */}
                     <div className="flex gap-4 flex-1 w-full">
-                      {video.thumbnail && (
+                        {video.thumbnail && (
                         <img
                           src={video.thumbnail}
                           alt="Thumbnail"
-                          className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover shrink-0"
+                          className="w-24 h-16 rounded-lg object-cover shrink-0"
                         />
-                      )}
+                        )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-white truncate">{video.title || "Video senza titolo"}</h3>
                         <p className="text-xs text-neutral-400 mt-1 break-all line-clamp-2">
                           {video.url}
                         </p>
-                        <p className="text-xs text-neutral-500 mt-2">
-                          Paese: <span className="text-neutral-300 font-semibold">{video.countryCode}</span>
-                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <p className="text-xs text-neutral-500">
+                          Paese: <span className="text-neutral-300 font-semibold">{video.country || video.countryCode}</span>
+                          </p>
+                          {video.flag && (
+                          <img
+                            src={video.flag}
+                            alt="Flag"
+                            className="h-5 w-8 rounded-md object-contain"
+                          />
+                          )}                        
+                        </div>
+                        
                       </div>
                     </div>
 

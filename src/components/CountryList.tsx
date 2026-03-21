@@ -75,7 +75,7 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
 
             {/* MENU RISULTATI*/}
             <ul 
-                className="w-full bg-neutral-800/95 backdrop-blur-xl rounded-xl mt-2 shadow-2xl border border-white/10 overflow-hidden max-h-[calc(100vh-13.9rem)] min-h-[calc(100vh-13.9rem)]"
+                className="w-full bg-neutral-800/95 backdrop-blur-xl rounded-xl mt-2 shadow-2xl border border-white/10 overflow-y-auto max-h-[calc(100vh-13.9rem)] min-h-[calc(100vh-13.9rem)] scrollbar-none"
             >
                 {searchTerm.trim() !== "" ? (
                     filteredCountries.length > 0 ? (

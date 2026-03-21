@@ -25,6 +25,8 @@ export interface video {
   title?: string; // Titolo del video (opzionale, da recuperare tramite YouTube o simili)
   thumbnail?: string; // URL dell'immagine di anteprima (opzionale)
   status: "pending" | "approved" | "rejected"; // Stato del video (opzionale)
+  country?: string; // Nome del paese (opzionale, da recuperare tramite API)
+  flag?: string; // URL della bandiera del paese (opzionale, da recuperare tramite API)
 }
 
 export interface user{
