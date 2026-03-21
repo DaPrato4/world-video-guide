@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { video } from "../types";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
@@ -67,8 +67,20 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
             url: videoUrl,
             countryCode: Number(countryCode),  // es. 380
             createdAt: new Date(),      // utile per l'ordinamento
-            status: "pending"          // Stato iniziale
+            status: "pending",          // Stato iniziale
+            submittedBy: user?.uid || "anonymous" // ID dell'utente che ha suggerito (se disponibile)
             });
+            // Aggiorniamo il numero di video suggeriti in stato pending dell' utente utilizzando un campo stats
+            if (user) {
+                const userRef = doc(db, "users", user.uid);
+                await updateDoc(userRef, { 
+                    "stats.pendingVideos": increment(1),
+                    "stats.suggestedVideos": increment(1)
+
+                });
+
+            }
+
             // Mostra alert di successo
             setAlert({ type: "success", message: "Video suggerito con successo! Verrà revisionato a breve." });
         } catch (error) {

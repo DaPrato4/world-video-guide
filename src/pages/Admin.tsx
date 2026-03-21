@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, doc, increment } from "firebase/firestore";
 import type { user, video } from "../types/index"
 
 export default function Admin({ user }: { user: user | null }) {
@@ -66,8 +66,26 @@ export default function Admin({ user }: { user: user | null }) {
   const updateVideoStatus = async (videoId: string, newStatus: "approved" | "rejected") => {
     try {
       setUpdating(videoId);
+      
+      // Troviamo il video localmente per avere i dati necessari (es. submittedBy)
+      const targetVideo = pendingVideos.find(v => v.id === videoId);
+      if (!targetVideo) {
+        throw new Error("Video non trovato nella lista locale");
+      }
+
       const videoRef = doc(db, "videos", videoId);
       await updateDoc(videoRef, { status: newStatus });
+
+      // Usiamo submittedBy che abbiamo salvato in fase di creazione
+      const suggesterUid = targetVideo.submittedBy;
+
+      if (suggesterUid && suggesterUid !== "anonymous") {
+        await updateDoc(doc(db, "users", suggesterUid), {
+          "stats.pendingVideos": increment(-1),
+          ...(newStatus === "approved" && { "stats.approvedVideos": increment(1) }),
+          ...(newStatus === "rejected" && { "stats.rejectedVideos": increment(1) }),
+        });
+      }
       
       // Rimuovi il video dalla lista dopo l'aggiornamento
       setPendingVideos(pendingVideos.filter(v => v.id !== videoId));
@@ -102,7 +120,7 @@ export default function Admin({ user }: { user: user | null }) {
             <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter">
               Admin <span className="text-blue-500">Panel</span>
             </h1>
-            <span className="hidden md:block bg-blue-600/10 text-blue-400 text-[10px] px-2 py-1 rounded font-bold border border-blue-500/20">
+            <span className="bg-blue-600/10 text-blue-400 text-[10px] px-2 py-1 rounded font-bold border border-blue-500/20">
               {user.role === "moderator" ? "MODERATORE" : "ADMIN"}
             </span>
           </div>

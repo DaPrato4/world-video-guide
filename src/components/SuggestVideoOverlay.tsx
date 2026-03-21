@@ -47,7 +47,7 @@ export default function SuggestVideoModal({  onClose, onSubmit, countryName }: S
           </div>
 
           {/* Feedback visivo se c'è un testo */}
-          {url.includes("youtube.com") ? (
+          {(url.includes("youtube.com") || url.includes("youtu.be")) ? (
             <div className="bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl flex items-center gap-3">
               <span className="text-xl">🔗</span>
               <p className="text-xs text-blue-300 font-medium text-pretty">Link YouTube rilevato. Verrà inviato ai moderatori per l'approvazione.</p>
@@ -73,7 +73,7 @@ export default function SuggestVideoModal({  onClose, onSubmit, countryName }: S
                 onSubmit(url);
                 setUrl("");
               }}
-              disabled={!url.includes("youtube.com")}
+              disabled={!url.includes("youtube.com") && !url.includes("youtu.be")}
               className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
 
             >
