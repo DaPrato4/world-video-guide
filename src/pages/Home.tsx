@@ -1,8 +1,8 @@
 import { useEffect, useState} from 'react';
-import WorldMap from '../components/WorldMap';
-import CountryOverlay from '../components/CountryOverlay';
-import CountryList from '../components/CountryList';
-import LoginOverlay from '../components/LoginOverlay';
+import WorldMap from '../components/home/WorldMap';
+import CountryOverlay from '../components/home/CountryOverlay';
+import CountryList from '../components/home/CountryList';
+import LoginOverlay from '../components/common/LoginOverlay';
 
 //firebase
 import { auth } from "../firebase";

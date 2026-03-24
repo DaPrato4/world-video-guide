@@ -28,6 +28,8 @@ export interface video {
   country?: string; // Nome del paese (opzionale, da recuperare tramite API)
   flag?: string; // URL della bandiera del paese (opzionale, da recuperare tramite API)
   submittedBy?: string; // ID dell'utente che ha suggerito il video (opzionale)
+  suggesterName?: string; // Nome dell'utente che ha suggerito il video (opzionale)
+
 }
 
 export interface user{

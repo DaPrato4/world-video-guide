@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { video } from "../types";
-import { collection, addDoc, doc, updateDoc, increment } from "firebase/firestore";
-import { db } from "../firebase";
+import type { video } from "../../types";
+import { collection, addDoc, doc, updateDoc, increment, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
-import Alert from "./Alert";
+import Alert from "../common/Alert";
 
 interface CountryOverlayProps {
   country: any;
@@ -59,9 +59,18 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
 
     // Funzione per aggiungere un nuovo video al database
     const handleAddVideo = async (videoUrl: string, countryCode: number) => {
+
         if (!videoUrl) return;
 
         try {
+            const q = query(collection(db, "users"), where("uid", "==", user?.uid));
+            const pendingVideosDoc = await getDocs(q);
+            if(pendingVideosDoc.docs[0]?.data()?.stats?.pendingVideos >= 5) {
+                setAlert({ type: "error", message: "Hai raggiunto il limite di 5 video in attesa. Attendi la revisione o rimuovi alcuni prima di suggerirne altri." });
+                return;
+            }
+
+
             // Salviamo solo i due dati fondamentali
             await addDoc(collection(db, "videos"), {
             url: videoUrl,
@@ -71,6 +80,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
             submittedBy: user?.uid || "anonymous" // ID dell'utente che ha suggerito (se disponibile)
             });
             // Aggiorniamo il numero di video suggeriti in stato pending dell' utente utilizzando un campo stats
+            console.log(user);
             if (user) {
                 const userRef = doc(db, "users", user.uid);
                 await updateDoc(userRef, { 

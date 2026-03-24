@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Country } from "../types";
+import type { Country } from "../../types";
 
 interface CountryListProps {
     SelectCountry: (country: Country) => void
