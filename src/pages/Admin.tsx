@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, query, where, getDocs, updateDoc, doc, increment } from "firebase/firestore";
 import type { user, video } from "../types/index"
-import AdminHeader from "../components/admin/AdminHeader";
+import AdminHeader from "../components/common/Header";
 import VideoList from "../components/admin/VideoList";
 
 export default function Admin({ user }: { user: user | null }) {
@@ -123,7 +123,7 @@ export default function Admin({ user }: { user: user | null }) {
 
   return (
     <div className="min-h-screen bg-neutral-900 text-white">
-      <AdminHeader user={user} />
+      <AdminHeader user={user} page="Admin"/>
 
       {/* CONTENUTO PRINCIPALE */}
       <main className="max-w-7xl mx-auto p-4 md:p-8">

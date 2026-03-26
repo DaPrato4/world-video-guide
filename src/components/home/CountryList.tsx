@@ -59,7 +59,7 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
     }, [SelectedCountry, countriesData, SelectCountry]);
 
     return (
-        <div className="z-50 w-1/6 h-fit mr-6 mt-6 flex flex-col"> 
+        <div className="z-20 w-1/6 h-fit mr-6 mt-6 flex flex-col"> 
             {/* CONTENITORE RICERCA */}
             <div className="bg-neutral-800/90 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-white/10 flex items-center gap-3">
                 <span className="text-neutral-500 text-lg">🔍</span>

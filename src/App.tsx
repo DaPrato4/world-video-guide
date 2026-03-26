@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
+import Profile from "./pages/Profile";
 import { auth, db } from "./firebase";
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import type { user, video } from "./types";
 import { collection, doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
+
 
 // App.tsx
 export default function App() {
@@ -30,7 +32,7 @@ export default function App() {
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email ?? "",
-              displayName: firebaseUser.displayName ?? "",
+              displayName: (userData as any).displayName ?? "",
               role: (userData as any).role ?? "user",
               photoURL: firebaseUser.photoURL ?? "",
             });
@@ -39,7 +41,7 @@ export default function App() {
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email ?? "",
-              displayName: firebaseUser.displayName ?? "",
+              displayName: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "",
               role: "user",
               photoURL: firebaseUser.photoURL ?? "",
             });
@@ -104,11 +106,15 @@ export default function App() {
   </div>);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home user={user} videos={videos} />} />
-        <Route path="/admin" element={<Admin user={user} />} />
-      </Routes>
-    </Router>
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home user={user} videos={videos} />} />
+          <Route path="/admin" element={<Admin user={user} />} />
+          <Route path="/profile" element={<Profile user={user} onLogOut={() => signOut(auth)} />} />
+          <Route path="*" element={<div className="bg-black h-screen text-white flex items-center justify-center font-bold tracking-widest">404 - PAGE NOT FOUND</div>} />
+        </Routes>
+      </Router>
+    </>
   );
 }
