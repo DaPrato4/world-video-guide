@@ -1,6 +1,6 @@
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup} from "@vnedyalk0v/react19-simple-maps";
 import { useMemo } from "react";
-import type{ Country, WorldMapProps } from "../types";
+import type{ Country, WorldMapProps } from "../../types";
 
 export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCountry, countriesData, geoData}: WorldMapProps) {
 

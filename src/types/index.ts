@@ -29,7 +29,7 @@ export interface video {
   flag?: string; // URL della bandiera del paese (opzionale, da recuperare tramite API)
   submittedBy?: string; // ID dell'utente che ha suggerito il video (opzionale)
   suggesterName?: string; // Nome dell'utente che ha suggerito il video (opzionale)
-
+  createdAt?: Date; // Data di creazione
 }
 
 export interface user{
@@ -38,4 +38,10 @@ export interface user{
   displayName: string;
   role: "user" | "moderator" | "admin";
   photoURL?: string; // URL dell'immagine del profilo (opzionale)
+  stats?: {
+    pendingVideos: number;
+    approvedVideos: number;
+    rejectedVideos: number;
+    suggestedVideos : number;
+  };
 }

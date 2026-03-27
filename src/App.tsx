@@ -23,7 +23,6 @@ export default function App() {
 
         try {
           const userDocSnap = await getDoc(userDocRef);
-          console.log("User document snapshot:", userDocSnap);
 
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
@@ -35,6 +34,7 @@ export default function App() {
               displayName: (userData as any).displayName ?? "",
               role: (userData as any).role ?? "user",
               photoURL: firebaseUser.photoURL ?? "",
+              stats: (userData as any).stats || { pendingVideos: 340, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
             });
           } else {
             // Caso limite: l'utente esiste in Auth ma non ha ancora un documento in Firestore
@@ -44,6 +44,7 @@ export default function App() {
               displayName: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "",
               role: "user",
               photoURL: firebaseUser.photoURL ?? "",
+              stats: { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
             });
             //aggiungiamo user su firestore
             await setDoc(userDocRef, {
@@ -51,6 +52,8 @@ export default function App() {
               email: firebaseUser.email ?? "",
               displayName: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "",
               role: "user",
+              photoURL: firebaseUser.photoURL ?? "",
+              stats: { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
             });
           }
         } catch (error) {
@@ -78,11 +81,6 @@ export default function App() {
     return () => { unsubscribeAuth(); unsubscribeVideos(); };
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      console.log(user);
-    }
-  }, [user]);
 
   if (loading) return (
   <div className="bg-black h-screen text-white flex items-center justify-center font-bold tracking-widest">

@@ -14,7 +14,7 @@ export default function Header({ user, page }: { user: user | null; page: string
 
   return (
     <>
-    <header className="bg-neutral-800 border-b border-white/5 p-4 md:p-6 sticky top-0 z-100 shadow-xl">
+    <header className="bg-neutral-800 border-b border-white/5 p-4 md:p-6 sticky top-0 z-50 shadow-xl">
       <div className="max-w-7xl mx-auto flex flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4">
           <div className="flex flex-col -tracking-tighter">
