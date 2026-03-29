@@ -31,22 +31,26 @@ export default function StatsGrid({ user }: { user: user | null }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-3 gap-4 mb-6">
       {statCards.map((stat) => {
         const Icon = stat.icon;
         return (
           <div
             key={stat.label}
-            className={`${stat.color} border rounded-xl p-6 backdrop-blur-sm transition-all duration-200 hover:shadow-lg hover:scale-105`}
+            className={`${stat.color} border rounded-xl p-4 backdrop-blur-sm transition-all duration-200 hover:shadow-lg group relative`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-75 mb-2">
+                <p className="hidden md:block text-sm font-medium opacity-75 mb-2">
                   {stat.label}
                 </p>
-                <p className="text-3xl font-bold">{stat.value}</p>
+                <p className="text-2xl md:text-3xl font-bold">{stat.value}</p>
               </div>
-              <Icon className={`w-12 h-12 ${stat.iconColor}`} />
+              <Icon className={`w-12 h-12 ${stat.iconColor} ml-4`} />
+            </div>
+            
+            <div className="block md:hidden absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-active:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+              {stat.label}
             </div>
           </div>
         );

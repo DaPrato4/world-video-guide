@@ -5,6 +5,8 @@ import { auth } from "../../firebase";
 import { useState } from "react";
 import LoginOverlay from "./LoginOverlay";
 import { TbWorldSearch } from "react-icons/tb";
+import { Link } from "react-router";
+import { FiShield, FiUser } from "react-icons/fi";
 
 
 
@@ -16,24 +18,33 @@ export default function Header({ user, page }: { user: user | null; page: string
     <>
     <header className="bg-neutral-800 border-b border-white/5 p-4 md:p-6 sticky top-0 z-50 shadow-xl">
       <div className="max-w-7xl mx-auto flex flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col -tracking-tighter">
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter">
-                {page === "Profile" ? "Profile" : page === "Admin" ? "Admin" : "Home"} <span className="text-blue-500">Panel</span>
-              </h1>
-              <TbWorldSearch className="w-6 h-6 text-blue-500" />
+        <Link to="/">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col -tracking-tighter">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter">
+                  {page === "Profile" ? "Profile" : page === "Admin" ? "Admin" : "Home"} <span className="text-blue-500">Panel</span>
+                </h1>
+                {page === "Home" ? (
+                  <TbWorldSearch className="w-6 h-6 text-blue-500" />
+                  ) : page === "Profile" ? (
+                    <FiUser className="w-6 h-6 text-blue-500"/>
+                  ) : page === "Admin" ? (
+                    <FiShield className="w-6 h-6 text-blue-500" />
+                  ) : null
+                }
+              </div>
+              {page === "Home" && (
+                <p className="hidden md:block text-sm text-neutral-400">Esplora il mondo attraverso i video condivisi dagli utenti</p>
+              )}
             </div>
-            {page === "Home" && (
-              <p className="hidden md:block text-sm text-neutral-400">Esplora il mondo attraverso i video condivisi dagli utenti</p>
+            {page != "Home" && (
+              <span className="bg-blue-600/10 text-blue-400 text-[10px] px-2 py-1 rounded font-bold border border-blue-500/20">
+                {user && (user.role === "moderator" ? "MODERATORE" : user.role === "admin" ? "ADMIN" : "UTENTE")}
+              </span>
             )}
           </div>
-          {page != "Home" && (
-            <span className="bg-blue-600/10 text-blue-400 text-[10px] px-2 py-1 rounded font-bold border border-blue-500/20">
-              {user && (user.role === "moderator" ? "MODERATORE" : user.role === "admin" ? "ADMIN" : "UTENTE")}
-            </span>
-          )}
-        </div>
+        </Link>
         
         <div className="flex items-center gap-3">
           {user ? (

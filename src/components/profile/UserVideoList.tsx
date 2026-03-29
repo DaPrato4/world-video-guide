@@ -42,29 +42,31 @@ export default function UserVideoList({
         orderBy("createdAt", "desc")
       );
 
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+      const unsubscribe = onSnapshot(q, async (snapshot) => {
         const videosData = snapshot.docs.map((doc) => ({
           id: doc.id,
+          countryCode: doc.data().countryCode,
           ...doc.data(),
         })) as video[];
-        // prende youtube thumbnail estraendo l'ID dall'URL (sincrono, senza fetch)
-        const extractYouTubeId = (url: string): string | null => {
-          try {
-            const regExp = /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-            const match = url.match(regExp);
-            return match ? match[1] : null;
-          } catch {
-            return null;
-          }
-        };
 
-        const videosWithThumbnails = videosData.map((video) => {
-          const id = video.url ? extractYouTubeId(video.url) : null;
-          return {
-            ...video,
-            thumbnail: id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : undefined,
-          } as video & { thumbnail?: string };
-        });
+        const videosWithThumbnails = await Promise.all(
+          videosData.map(async (video) => {
+            const res = await fetch(`https://www.youtube.com/oembed?url=${video.url}&format=json`);
+            const data = await res.json();
+            const countryInfo = await fetch(`https://restcountries.com/v3.1/alpha/${video.countryCode}`);
+            const countryData = await countryInfo.json();
+            const flagUrl = countryData[0]?.flags?.png || null;
+            return {
+              ...video,
+              thumbnail: data.thumbnail_url,
+              title: data.title,
+              country: countryData[0]?.name?.common || "Paese sconosciuto",
+              flag: flagUrl,
+              
+            } as video & { thumbnail?: string };
+          })
+        );
+        console.log("Video caricati:", videosWithThumbnails);
         setVideos(videosWithThumbnails);
         setLoading(false);
       });
