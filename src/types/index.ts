@@ -29,6 +29,7 @@ export interface video {
   flag?: string; // URL della bandiera del paese (opzionale, da recuperare tramite API)
   submittedBy?: string; // ID dell'utente che ha suggerito il video (opzionale)
   suggesterName?: string; // Nome dell'utente che ha suggerito il video (opzionale)
+  suggesterEmail?: string; // Email dell'utente che ha suggerito il video (opzionale)
   createdAt?: Date; // Data di creazione
 }
 

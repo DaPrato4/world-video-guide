@@ -4,9 +4,9 @@ import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import { auth, db } from "./firebase";
 import { useEffect, useState } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import type { user, video } from "./types";
-import { collection, doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
 
 
 // App.tsx
@@ -16,69 +16,58 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let unsubscribeUserDoc: () => void = () => {};
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // 1. L'utente è loggato, andiamo a prendere il suo profilo su Firestore
         const userDocRef = doc(db, "users", firebaseUser.uid);
 
-        try {
-          const userDocSnap = await getDoc(userDocRef);
-
-          if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            // 2. Uniamo i dati di Auth con quelli di Firestore (Role, stats, ecc.)
-            console.log("userData:", userData);
+        // Ascolta i cambiamenti in tempo reale sul documento dell'utente
+        unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email ?? "",
-              displayName: (userData as any).displayName ?? "",
-              role: (userData as any).role ?? "user",
+              displayName: userData.displayName ?? "",
+              role: (userData.role as "user" | "moderator" | "admin") ?? "user",
               photoURL: firebaseUser.photoURL ?? "",
-              stats: (userData as any).stats || { pendingVideos: 340, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
+              stats: userData.stats || { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
             });
           } else {
-            // Caso limite: l'utente esiste in Auth ma non ha ancora un documento in Firestore
-            setUser({
+            // Se il documento non esiste, lo creiamo (fatto una sola volta)
+            const newUser: user = {
               uid: firebaseUser.uid,
               email: firebaseUser.email ?? "",
               displayName: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "",
               role: "user",
               photoURL: firebaseUser.photoURL ?? "",
               stats: { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
-            });
-            //aggiungiamo user su firestore
-            await setDoc(userDocRef, {
-              uid: firebaseUser.uid,
-              email: firebaseUser.email ?? "",
-              displayName: firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "",
-              role: "user",
-              photoURL: firebaseUser.photoURL ?? "",
-              stats: { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
-            });
+            };
+            setDoc(userDocRef, newUser);
+            setUser(newUser);
           }
-        } catch (error) {
-          console.error("Errore nel recupero del ruolo:", error);
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email ?? "",
-            displayName: firebaseUser.displayName ?? "",
-            role: "user",
-          });
-        }
+          setLoading(false);
+        });
       } else {
         // L'utente ha fatto logout
+        if (unsubscribeUserDoc) unsubscribeUserDoc();
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    // 2. Caricamento Video (UNA SOLA VOLTA QUI)
+    // 2. Caricamento Video
     const unsubscribeVideos = onSnapshot(collection(db, "videos"), (snapshot) => {
       const vList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as video[];
       setVideos(vList);
     });
 
-    return () => { unsubscribeAuth(); unsubscribeVideos(); };
+    return () => { 
+      unsubscribeAuth(); 
+      unsubscribeVideos(); 
+      if (unsubscribeUserDoc) unsubscribeUserDoc();
+    };
   }, []);
 
 
@@ -109,7 +98,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home user={user} videos={videos} />} />
           <Route path="/admin" element={<Admin user={user} />} />
-          <Route path="/profile" element={<Profile user={user} onLogOut={() => signOut(auth)} />} />
+          <Route path="/profile" element={<Profile user={user} />} />
           <Route path="*" element={<div className="bg-black h-screen text-white flex items-center justify-center font-bold tracking-widest">404 - PAGE NOT FOUND</div>} />
         </Routes>
       </Router>

@@ -17,7 +17,7 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
 
     if (!geoData) {
         return (
-        <div className="bg-black h-full text-white flex items-center justify-center font-bold tracking-widest">
+        <div className="bg-black h-full text-white flex items-center justify-center font-bold tracking-widest w-full">
             <div className="flex items-center space-x-4">
             <svg
                 className="w-10 h-10 text-white animate-spin"

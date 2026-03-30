@@ -3,18 +3,18 @@ import Header from "../components/common/Header";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import StatsGrid from "../components/profile/StatsGrid";
 import UserVideoList from "../components/profile/UserVideoList";
+import { useState } from "react";
+import LoginOverlay from "../components/common/LoginOverlay";
+import EditProfileOverlay from "../components/profile/EditProfileOverlay";
 
-export default function Profile({ user, onLogOut }: { user: user | null; onLogOut: () => void }) {
+export default function Profile({ user }: { user: user | null}) {
+
+    const [isLoginOpen, setIsLoginOpen] = useState(false);
+    const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
     const handleSuggestVideo = () => {
         // Navigare alla pagina Home per suggerire un video
-        // Questo richiederà react-router-dom
         window.location.href = "/";
-    };
-
-    const handleEditProfile = () => {
-        // TODO: Aprire un modal o navigare a una pagina di modifica profilo
-        console.log("Modifica profilo");
     };
 
     return (
@@ -26,7 +26,7 @@ export default function Profile({ user, onLogOut }: { user: user | null; onLogOu
                     {user ? (
                         <>
                             {/* Profile Header */}
-                            <ProfileHeader user={user} onEdit={handleEditProfile} />
+                            <ProfileHeader user={user} onEdit={() => setIsEditProfileOpen(true)} />
 
                             {/* Stats Grid */}
                             <StatsGrid user={user} />
@@ -34,15 +34,6 @@ export default function Profile({ user, onLogOut }: { user: user | null; onLogOu
                             {/* User Video List */}
                             <UserVideoList user={user} onSuggestVideo={handleSuggestVideo} />
 
-                            {/* Logout Button */}
-                            <div className="mt-8 flex justify-end">
-                                <button
-                                    onClick={onLogOut}
-                                    className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg transition-colors duration-200 border border-red-500/30"
-                                >
-                                    Esci
-                                </button>
-                            </div>
                         </>
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full">
@@ -54,7 +45,7 @@ export default function Profile({ user, onLogOut }: { user: user | null; onLogOu
                                     Devi essere autenticato per visualizzare il tuo profilo e i tuoi video.
                                 </p>
                                 <button
-                                    onClick={handleEditProfile}
+                                    onClick={() => setIsLoginOpen(true)}
                                     className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors duration-200 border border-blue-500/30"
                                 >
                                     Accedi
@@ -64,6 +55,17 @@ export default function Profile({ user, onLogOut }: { user: user | null; onLogOu
                     )}
                 </div>
             </main>
+
+            <LoginOverlay
+                isOpen={isLoginOpen}
+                onClose={() => setIsLoginOpen(false)}
+            />
+
+            <EditProfileOverlay
+                user={user}
+                isOpen={isEditProfileOpen}
+                onClose={() => setIsEditProfileOpen(false)}
+            />
         </div>
     );
 }

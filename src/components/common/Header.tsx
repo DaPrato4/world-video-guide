@@ -38,9 +38,15 @@ export default function Header({ user, page }: { user: user | null; page: string
                 <p className="hidden md:block text-sm text-neutral-400">Esplora il mondo attraverso i video condivisi dagli utenti</p>
               )}
             </div>
-            {page != "Home" && (
-              <span className="bg-blue-600/10 text-blue-400 text-[10px] px-2 py-1 rounded font-bold border border-blue-500/20">
-                {user && (user.role === "moderator" ? "MODERATORE" : user.role === "admin" ? "ADMIN" : "UTENTE")}
+            {page != "Home" && user && (
+              <span className={`text-[10px] px-2 py-1 rounded font-bold border transition-colors ${
+                user.role === "admin" 
+                  ? "bg-yellow-500/20 border-yellow-500/50 text-yellow-300" 
+                  : user.role === "moderator" 
+                    ? "bg-purple-500/20 border-purple-500/50 text-purple-300" 
+                    : "bg-blue-500/20 border-blue-500/50 text-blue-300"
+              }`}>
+                {user.role === "admin" ? "AMMINISTRATORE" : user.role === "moderator" ? "MODERATORE" : "UTENTE"}
               </span>
             )}
           </div>

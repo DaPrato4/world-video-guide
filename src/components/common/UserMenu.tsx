@@ -13,6 +13,7 @@ interface Props {
 
 export default function UserMenu({ user, onLogout, align = "right" }: Props) {
   const [open, setOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -41,10 +42,15 @@ export default function UserMenu({ user, onLogout, align = "right" }: Props) {
         className="inline-flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-neutral-700 hover:ring-2 hover:ring-white/10 transition"
         title={user.displayName || user.email}
       >
-        {user.photoURL ? (
-          <img src={user.photoURL} alt={user.displayName || "avatar"} className="w-full h-full object-cover" />
+        {user.photoURL && !imgError ? (
+          <img 
+            src={user.photoURL} 
+            alt={user.displayName || "avatar"} 
+            className="w-full h-full object-cover"
+            onError={() => setImgError(true)}
+          />
         ) : (
-          <span className="text-sm font-medium text-white">{initials || "U"}</span>
+          <span className="text-sm font-medium text-white">{initials || <FiUser />}</span>
         )}
       </button>
 
@@ -61,10 +67,15 @@ export default function UserMenu({ user, onLogout, align = "right" }: Props) {
               <div >
                 <div className="px-4 py-3 flex items-center justify-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-700 flex items-center justify-center">
-                    {user.photoURL ? (
-                        <img src={user.photoURL} alt={user.displayName || "avatar"} className="w-full h-full object-cover" />
+                    {user.photoURL && !imgError ? (
+                        <img 
+                          src={user.photoURL} 
+                          alt={user.displayName || "avatar"} 
+                          className="w-full h-full object-cover"
+                          onError={() => setImgError(true)}
+                        />
                     ) : (
-                        <span className="text-sm font-medium">{initials || "U"}</span>
+                        <span className="text-sm font-medium text-white">{initials || <FiUser />}</span>
                     )}
                     </div>
                     <div className="flex flex-col min-w-0 align-bottom">

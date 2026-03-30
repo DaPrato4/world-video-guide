@@ -39,6 +39,7 @@ export default function Admin({ user }: { user: user | null }) {
               country: datacountry[0].name.common,
               flag: datacountry[0].flags.png,
               suggesterName: suggesterData?.displayName || "Utente sconosciuto",
+              suggesterEmail: suggesterData?.email || "Email non disponibile",
               ...d
             } as video;
           } catch (error) {
@@ -51,6 +52,7 @@ export default function Admin({ user }: { user: user | null }) {
               country: "Paese non disponibile",
               flag: null,
               suggesterName: "Utente sconosciuto",
+              suggesterEmail: "Email non disponibile",
               ...d
             } as video;
           }

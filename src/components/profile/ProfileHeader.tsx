@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FiUser } from "react-icons/fi";
 import type { user } from "../../types";
 
@@ -7,7 +8,15 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
+  const [imgError, setImgError] = useState(false);
   if (!user) return null;
+
+  const initials = (user.displayName || user.email || "")
+    .split(" ")
+    .map((s) => s[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   // Colore badge basato su role
   const getRoleBadgeColor = (role: string) => {
@@ -38,15 +47,18 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
       <div className="flex flex-col md:flex-row items-center md:items-center gap-4 md:gap-6">
         {/* Avatar */}
         <div className="shrink-0">
-          {user.photoURL ? (
+          {user.photoURL && !imgError ? (
             <img
               src={user.photoURL}
               alt={user.displayName}
               className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full object-cover border-2 border-neutral-700"
+              onError={() => setImgError(true)}
             />
           ) : (
             <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center border-2 border-neutral-700">
-              <FiUser className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-white" />
+              <span className="text-xl md:text-2xl lg:text-3xl font-bold text-white">
+                {initials || <FiUser />}
+              </span>
             </div>
           )}
         </div>
