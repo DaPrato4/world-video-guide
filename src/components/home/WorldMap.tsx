@@ -50,7 +50,7 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
 
     return (
         <>
-        <ComposableMap projectionConfig={{ scale: 160 }} className="w-5/6 z-10 h-full touch-none">
+        <ComposableMap projectionConfig={{ scale: 160 }} className="w-full lg:w-5/6 z-10 h-full touch-none">
             <ZoomableGroup 
                 zoom={SelectedCountry?.coordinates ? 8 : 1} 
                 center={SelectedCountry?.coordinates ? [SelectedCountry.coordinates[1] as any, SelectedCountry.coordinates[0] as any] : undefined}
@@ -132,9 +132,6 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
             </ZoomableGroup>
             
         </ComposableMap>
-        <p className="absolute bottom-4 left-4 text-xs text-neutral-500">
-            Dati geografici da Natural Earth | Video demo fittizi
-        </p>
         </>
     );
 }
