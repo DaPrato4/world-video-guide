@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { HiCheckCircle, HiExclamationTriangle } from "react-icons/hi2";
 
 interface AlertProps {
     type: "success" | "error";
@@ -34,8 +35,9 @@ export default function Alert({ type, message, duration = 3000, onClose }: Alert
         }
     }, [visible, onClose]);
 
-    const icon = type === "success" ? "✅" : "⚠️";
-    const bgColor = type === "success" ? "bg-green-500/20 border-green-500/40" : "bg-red-500/20 border-red-500/40";
+    const Icon = type === "success" ? HiCheckCircle : HiExclamationTriangle;
+    const iconColor = type === "success" ? "text-green-500" : "text-red-500";
+    const bgColor = type === "success" ? "bg-green-500/10 border-green-500/20" : "bg-red-500/10 border-red-500/20";
 
     return (
         <AnimatePresence>
@@ -47,10 +49,12 @@ export default function Alert({ type, message, duration = 3000, onClose }: Alert
                     transition={{ duration: 0.25 }}
                     role="status"
                     aria-live="polite"
-                    className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-9999 px-4 py-3 rounded-xl border ${bgColor} flex items-center gap-3 shadow-lg`}
+                    className={`fixed top-4 left-1/2 -translate-x-1/2 z-9999`}
                 >
-                    <span className="text-xl">{icon}</span>
-                    <p className="text-sm text-white font-medium">{message}</p>
+                    <div className={`px-4 py-3 rounded-xl border ${bgColor} flex items-center gap-3 shadow-2xl backdrop-blur-md`}>
+                        <Icon className={`text-xl ${iconColor}`} />
+                        <p className="text-sm text-white font-medium">{message}</p>
+                    </div>
                 </motion.div>
             )}
         </AnimatePresence>

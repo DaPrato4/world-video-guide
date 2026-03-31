@@ -10,7 +10,7 @@ interface VideoCardProps {
 export default function VideoCard({ video, updating, onUpdateStatus }: VideoCardProps) {
   return (
     <div
-      className="bg-neutral-700/50 border border-neutral-600 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:bg-neutral-700/70 transition-colors"
+      className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 hover:border-white/20 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:bg-neutral-700/70 transition-colors"
     >
       {/* Video Info (Linkabile) */}
       <a 

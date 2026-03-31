@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, query, where, getDocs, updateDoc, doc, increment } from "firebase/firestore";
 import type { user, video } from "../types/index"
-import AdminHeader from "../components/common/Header";
+import Header from "../components/common/Header";
 import VideoList from "../components/admin/VideoList";
+import UserList from "../components/admin/UserList";
 
 export default function Admin({ user }: { user: user | null }) {
   const [pendingVideos, setPendingVideos] = useState<video[]>([]);
@@ -124,11 +125,12 @@ export default function Admin({ user }: { user: user | null }) {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-900 text-white">
-      <AdminHeader user={user} page="Admin"/>
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <Header user={user} page="Admin"/>
 
       {/* CONTENUTO PRINCIPALE */}
-      <main className="max-w-7xl mx-auto p-4 md:p-8">
+      <main className="flex flex-col gap-15 max-w-7xl mx-auto p-4 md:p-8">
+
         <div className="grid grid-cols-1 gap-6">
           <VideoList 
             videos={pendingVideos} 
@@ -137,6 +139,13 @@ export default function Admin({ user }: { user: user | null }) {
             onUpdateStatus={updateVideoStatus} 
           />
         </div>
+        {user.role === "admin" && (
+          <div className="grid grid-cols-1 gap-6">
+            <UserList 
+              currentUser={user}
+            />
+          </div>
+        )}
       </main>
     </div>
   );
