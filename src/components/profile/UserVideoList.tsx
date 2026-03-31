@@ -70,7 +70,6 @@ export default function UserVideoList({
             } as video & { thumbnail?: string };
           })
         );
-        console.log("Video caricati:", videosWithThumbnails);
         setVideos(videosWithThumbnails);
         setLoading(false);
       });

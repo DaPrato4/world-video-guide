@@ -32,7 +32,6 @@ export default function Admin({ user }: { user: user | null }) {
             const suggesterQuery = query(collection(db, "users"), where("uid", "==", d.submittedBy));
             const suggesterSnapshot = await getDocs(suggesterQuery);
             const suggesterData = suggesterSnapshot.empty ? null : suggesterSnapshot.docs[0].data() as any;
-            console.log("Dati utente suggeritore:", suggesterData);
             return {
               id: doc.id,
               thumbnail: datayoutube.thumbnail_url,

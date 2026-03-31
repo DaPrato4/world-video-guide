@@ -102,7 +102,6 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
                                             SelectCountry(countryData);
                                             SetOverCountry(null as any);
                                             setSearchTerm("");
-                                            console.log("Paese selezionato:", country);
                                         }}
                                         onMouseEnter={() => {SetOverCountry({ id: country.ccn3, coordinates: country.capitalInfo.latlng, capitalName: country.capital } as Country) }}
                                         onMouseLeave={() => SetOverCountry(null as any)}
@@ -139,7 +138,6 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
                                         };
                                         SelectCountry(countryData);
                                         SetOverCountry(null as any);
-                                        console.log("Paese selezionato:", country);
                                     }}
                                     onMouseEnter={() => {SetOverCountry({ id: country.ccn3, coordinates: country.capitalInfo.latlng, capitalName: country.capital } as Country) }}
                                     onMouseLeave={() => SetOverCountry(null as any)}
@@ -251,7 +249,6 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
                                                         SetOverCountry(null as any);
                                                         setSearchTerm("");
                                                         setIsModalOpen(false);
-                                                        console.log("Paese selezionato:", country);
                                                     }}
                                                 >
                                                     <span className="w-8 flex justify-center">
@@ -287,7 +284,6 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
                                                     SelectCountry(countryData);
                                                     SetOverCountry(null as any);
                                                     setIsModalOpen(false);
-                                                    console.log("Paese selezionato:", country);
                                                 }}
                                             >
                                                 <span className="w-8 flex justify-center">

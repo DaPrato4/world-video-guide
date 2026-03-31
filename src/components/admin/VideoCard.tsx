@@ -58,13 +58,12 @@ export default function VideoCard({ video, updating, onUpdateStatus }: VideoCard
                 Suggerito da: <span className="text-neutral-200 font-semibold trun">{video.suggesterName || "Utente sconosciuto"}</span>
               </p>
               {video.suggesterEmail && (
-                <a 
-                  href={`mailto:${video.suggesterEmail}`} 
+                <span 
                   className="text-[9px] md:text-[10px] text-cyan-300/70 hover:text-blue-400 truncate max-w-40 transition-colors"
                   title={video.suggesterEmail}
                 >
                   {video.suggesterEmail}
-                </a>
+                </span>
               )}
             </span>
                                     

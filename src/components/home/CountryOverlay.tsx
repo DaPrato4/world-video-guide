@@ -80,7 +80,6 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
             submittedBy: user?.uid || "anonymous" // ID dell'utente che ha suggerito (se disponibile)
             });
             // Aggiorniamo il numero di video suggeriti in stato pending dell' utente utilizzando un campo stats
-            console.log(user);
             if (user) {
                 const userRef = doc(db, "users", user.uid);
                 await updateDoc(userRef, { 
