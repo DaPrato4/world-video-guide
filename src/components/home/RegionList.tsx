@@ -10,51 +10,48 @@ import {
 } from "react-icons/gi";
 import { FaCity } from "react-icons/fa";
 
+import type {Region} from "../../types"
+
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
-
-interface Region {
-  name: string;
-  icon: React.ReactNode;
-  coordinates: [number, number]; // [latitude, longitude]
-  zoom: number;
-}
+import { useEffect, useRef } from 'react';
+import type { Swiper as SwiperType } from 'swiper';
 
 const REGIONS: Region[] = [
   {
     name: "Nord America",
     icon: <FaCity className="text-2xl" />,
-    coordinates: [15, -90],
+    coordinates: [25, -90],
     zoom: 4,
   },
   {
     name: "Sud America",
     icon: <GiCactus className="text-2xl" />,
-    coordinates: [-40, -60],
+    coordinates: [-20, -60],
     zoom: 4,
   },
   {
     name: "Europa",
     icon: <GiCastle className="text-2xl" />,
     coordinates: [40, 15],
-    zoom: 5,
+    zoom: 6,
   },
   {
     name: "Africa",
     icon: <GiElephant className="text-2xl" />,
-    coordinates: [-15, 20],
+    coordinates: [-5, 20],
     zoom: 3.5,
   },
   {
     name: "Medio Oriente",
     icon: <GiPalmTree className="text-2xl" />,
-    coordinates: [15, 50],
+    coordinates: [30, 50],
     zoom: 4.5,
   },
   {
     name: "Estremo Oriente",
     icon: <GiPagoda className="text-2xl" />,
-    coordinates: [15, 105],
+    coordinates: [20, 105],
     zoom: 4.5,
   },
   {
@@ -71,6 +68,18 @@ interface RegionListProps {
 }
 
 export default function RegionList({ onRegionSelect, selectedRegion }: RegionListProps) {
+  const swiperRef = useRef<SwiperType | null>(null);
+
+  useEffect(() => {
+    //quando viene montato il componente imposta swiper sulla regione selezionata (se c'è)
+    if (selectedRegion && swiperRef.current) {
+      const index = REGIONS.findIndex(r => r.name === selectedRegion);
+      if (index !== -1) {
+        swiperRef.current.slideToLoop(index);
+      }
+    }
+  }, [selectedRegion]);
+
 
   return (
     <>
@@ -83,13 +92,17 @@ export default function RegionList({ onRegionSelect, selectedRegion }: RegionLis
             grabCursor={true}
             centeredSlides={true}
             slidesPerView={'auto'}
-            loop={true}
+            initialSlide={2}
+            loop={true} // Loop solo se ci sono più di 1 slide
             coverflowEffect={{
               rotate: 0,
               stretch: 0,
               depth: 350,
               modifier: 2,
               slideShadows: false,
+            }}
+            onSwiper={(swiper) => {
+              swiperRef.current = swiper;
             }}
             onSlideChange={(swiper) => {
               const index = swiper.realIndex;

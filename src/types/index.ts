@@ -46,3 +46,10 @@ export interface user{
     suggestedVideos : number;
   };
 }
+
+export interface Region {
+  name: string;
+  icon: React.ReactNode;
+  coordinates: [number, number]; // [latitude, longitude]
+  zoom: number;
+}

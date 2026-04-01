@@ -5,24 +5,24 @@ import CountryList from '../components/home/CountryList';
 import LoginOverlay from '../components/common/LoginOverlay';
 import RegionList from '../components/home/RegionList';
 
-import type { Country, user, video } from '../types';
+import type { Country, Region, user, video } from '../types';
 
 import Header from '../components/common/Header';
+import { GiCastle } from 'react-icons/gi';
 
 
 export default function Home({ user, videos }: { user: user | null; videos: video[] }) {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [overCountry, setOverCountry] = useState<Country | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  
-  // Regione predefinita: Europa
-  const defaultEurope = {
-    name: "Europa",
-    emoji: "🏰",
-    coordinates: [50, 15] as [number, number],
-    zoom: 5,
-  };
-  const [selectedRegion, setSelectedRegion] = useState<any>(defaultEurope);
+
+  const europe : Region =   {
+      name: "Europa",
+      icon: <GiCastle className="text-2xl" />,
+      coordinates: [40, 15],
+      zoom: 5,
+  }
+  const [selectedRegion, setSelectedRegion] = useState<any>(europe);
 
   const [geoData, setGeoData] = useState(null);
   const [countriesData, setCountriesData] = useState<Country[]>([]);
@@ -71,7 +71,7 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
       {/* MAIN CONTENT / MAP AREA */}
       <main className="flex relative bg-[#111] h-full w-full overflow-hidden">
 
-        <RegionList 
+        <RegionList
           onRegionSelect={setSelectedRegion}
           selectedRegion={selectedRegion?.name || null}
         />

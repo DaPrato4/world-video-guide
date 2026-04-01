@@ -13,11 +13,11 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
     const baseColor = "purple"; // Puoi scegliere un colore di base per la scala
 
     // Determina se siamo su mobile con useState per tracciare il cambiamento
-    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1000);
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth < 768);
+            setIsMobile(window.innerWidth < 1000);
         };
 
         window.addEventListener('resize', handleResize);
@@ -132,44 +132,44 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
                     })
                 }
                 </Geographies>
-                {OverCountry?.coordinates?.[0] || SelectedCountry?.coordinates?.[0] ?(  
-                <Marker
-                    key={`marker-${OverCountry?.id || SelectedCountry?.id}`}
-                    coordinates={[
-                        OverCountry?.coordinates?.[1] ?? SelectedCountry?.coordinates?.[1],
-                        OverCountry?.coordinates?.[0] ?? SelectedCountry?.coordinates?.[0],
-                    ] as any}
-                    >
-                    <circle 
-                        r={3} 
-                        fill="#F00" 
-                        stroke="#fff" 
-                        strokeWidth={2} 
-                        style={{ pointerEvents: "none" }}
-                    />
-                    <text
-                        textAnchor="middle"
-                        y={-10}
-                        style={{
-                            fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
-                            fill: "#0b0b0b",
-                            fontSize: "9px",
-                            fontWeight: 700,
-                            pointerEvents: "none",
-                            paintOrder: "stroke fill",
-                            mixBlendMode: "normal"
-                        }}
-                        stroke="#ffffff"
-                        strokeWidth={3}
-                        strokeOpacity={0.95}
-                        strokeLinejoin="round"
-                        strokeLinecap="round"
-                        vectorEffect="non-scaling-stroke"
-                    >
-                        {OverCountry?.capitalName || SelectedCountry?.capitalName}
-                    </text>
-                </Marker>
-                ): null}
+                { (OverCountry?.coordinates?.[0] !== undefined || SelectedCountry?.coordinates?.[0] !== undefined) && (
+                    <Marker
+                        key={`marker-${OverCountry?.id || SelectedCountry?.id}`}
+                        coordinates={[
+                            OverCountry?.coordinates?.[1] ?? SelectedCountry?.coordinates?.[1],
+                            OverCountry?.coordinates?.[0] ?? SelectedCountry?.coordinates?.[0],
+                        ] as any}
+                        >
+                        <circle 
+                            r={3} 
+                            fill="#F00" 
+                            stroke="#fff" 
+                            strokeWidth={2} 
+                            style={{ pointerEvents: "none" }}
+                        />
+                        <text
+                            textAnchor="middle"
+                            y={-10}
+                            style={{
+                                fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
+                                fill: "#0b0b0b",
+                                fontSize: "9px",
+                                fontWeight: 700,
+                                pointerEvents: "none",
+                                paintOrder: "stroke fill",
+                                mixBlendMode: "normal"
+                            }}
+                            stroke="#ffffff"
+                            strokeWidth={3}
+                            strokeOpacity={0.95}
+                            strokeLinejoin="round"
+                            strokeLinecap="round"
+                            vectorEffect="non-scaling-stroke"
+                        >
+                            {OverCountry?.capitalName || SelectedCountry?.capitalName}
+                        </text>
+                    </Marker>
+                )}
             </ZoomableGroup>
             
         </ComposableMap>
