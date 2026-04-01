@@ -82,18 +82,18 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
         <ComposableMap projectionConfig={{ scale: 160 }} className="w-full lg:w-5/6 z-10 h-full touch-none">
             <ZoomableGroup 
                 zoom={
-                    isMobile 
-                        ? (SelectedCountry?.coordinates ? 8 : (selectedRegion ? selectedRegion.zoom : 1))
-                        : 1
+                    SelectedCountry?.coordinates 
+                        ? (8)
+                        : isMobile
+                            ? (selectedRegion ? selectedRegion.zoom : 1)
+                            : 1.2
                 }
                 center={
-                    isMobile
-                        ? (SelectedCountry?.coordinates 
-                            ? ([SelectedCountry.coordinates[1], SelectedCountry.coordinates[0]] as any)
-                            : (selectedRegion 
-                                ? ([selectedRegion.coordinates[1], selectedRegion.coordinates[0]] as any)
-                                : undefined))
-                        : undefined
+                    SelectedCountry?.coordinates
+                        ? [SelectedCountry.coordinates[1], SelectedCountry.coordinates[0]] as any
+                        : isMobile
+                            ? [selectedRegion?.coordinates[1], selectedRegion?.coordinates[0]] as any
+                            : undefined
                 }
                 // CONFIGURAZIONE PER BLOCCARE L'UTENTE:
                 maxZoom={isMobile ? 8 : 1} // Su desktop blocca a 1, su mobile permette zoom
