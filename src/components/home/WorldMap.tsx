@@ -1,10 +1,28 @@
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup} from "@vnedyalk0v/react19-simple-maps";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type{ Country, WorldMapProps } from "../../types";
 
-export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCountry, countriesData, geoData}: WorldMapProps) {
+interface Region {
+  name: string;
+  coordinates: [number, number];
+  zoom: number;
+}
+
+export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCountry, countriesData, geoData, selectedRegion}: WorldMapProps & { selectedRegion?: Region | null }) {
 
     const baseColor = "purple"; // Puoi scegliere un colore di base per la scala
+
+    // Determina se siamo su mobile con useState per tracciare il cambiamento
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Memoizza la map dei paesi per evitare lookup ripetuti
     const countriesByCode = useMemo(() => {
@@ -14,6 +32,17 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
         });
         return map;
     }, [countriesData]);
+
+    // Sposta il calcolo fuori dal render loop
+    const videoCountsByCountry = useMemo(() => {
+        const counts: Record<string, number> = {};
+        videos.forEach(v => {
+            if (v.status === "approved") {
+                counts[v.countryCode] = (counts[v.countryCode] || 0) + 1;
+            }
+        });
+        return counts;
+    }, [videos]);
 
     if (!geoData) {
         return (
@@ -52,10 +81,22 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
         <>
         <ComposableMap projectionConfig={{ scale: 160 }} className="w-full lg:w-5/6 z-10 h-full touch-none">
             <ZoomableGroup 
-                zoom={SelectedCountry?.coordinates ? 8 : 1} 
-                center={SelectedCountry?.coordinates ? [SelectedCountry.coordinates[1] as any, SelectedCountry.coordinates[0] as any] : undefined}
+                zoom={
+                    isMobile 
+                        ? (SelectedCountry?.coordinates ? 8 : (selectedRegion ? selectedRegion.zoom : 1))
+                        : 1
+                }
+                center={
+                    isMobile
+                        ? (SelectedCountry?.coordinates 
+                            ? ([SelectedCountry.coordinates[1], SelectedCountry.coordinates[0]] as any)
+                            : (selectedRegion 
+                                ? ([selectedRegion.coordinates[1], selectedRegion.coordinates[0]] as any)
+                                : undefined))
+                        : undefined
+                }
                 // CONFIGURAZIONE PER BLOCCARE L'UTENTE:
-                maxZoom={1} // Impedisce di zoomare oltre quello che decidi tu
+                maxZoom={isMobile ? 8 : 1} // Su desktop blocca a 1, su mobile permette zoom
                 minZoom={1} // Impedisce di rimpicciolire
                 filterZoomEvent={() => false} // Disabilita la rotellina del mouse
                 onMoveStart={() => {}} // Ignora tentativi di trascinamento
@@ -66,7 +107,7 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
                 {({ geographies }) =>
                     geographies.map((geo, index) => {
                     const countryCode = geo.id || 0-index;
-                    const videoNumber = videos.filter(v => v.countryCode == countryCode && v.status === "approved").length;
+                    const videoNumber = videoCountsByCountry[countryCode] || 0;
                     const hasVideo = videoNumber > 0;
                     return (
                         <Geography

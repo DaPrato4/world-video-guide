@@ -3,6 +3,7 @@ import WorldMap from '../components/home/WorldMap';
 import CountryOverlay from '../components/home/CountryOverlay';
 import CountryList from '../components/home/CountryList';
 import LoginOverlay from '../components/common/LoginOverlay';
+import RegionList from '../components/home/RegionList';
 
 import type { Country, user, video } from '../types';
 
@@ -13,6 +14,15 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [overCountry, setOverCountry] = useState<Country | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  
+  // Regione predefinita: Europa
+  const defaultEurope = {
+    name: "Europa",
+    emoji: "🏰",
+    coordinates: [50, 15] as [number, number],
+    zoom: 5,
+  };
+  const [selectedRegion, setSelectedRegion] = useState<any>(defaultEurope);
 
   const [geoData, setGeoData] = useState(null);
   const [countriesData, setCountriesData] = useState<Country[]>([]);
@@ -61,6 +71,11 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
       {/* MAIN CONTENT / MAP AREA */}
       <main className="flex relative bg-[#111] h-full w-full overflow-hidden">
 
+        <RegionList 
+          onRegionSelect={setSelectedRegion}
+          selectedRegion={selectedRegion?.name || null}
+        />
+
         <WorldMap
           videos={videos}
           SelectedCountry={selectedCountry}
@@ -68,6 +83,7 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
           OverCountry={overCountry}
           countriesData={countriesData}
           geoData={geoData}
+          selectedRegion={selectedRegion}
         />
 
         <CountryList 

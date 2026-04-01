@@ -170,7 +170,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                     </nav>
 
                     {/* Pulsanti Azione in basso alla Sidebar */}
-                    <div className="p-4 space-y-2">
+                    <div className="p-4 space-y-2 mt-auto">
                         {/* LOGICA CONDIZIONALE: Se c'è l'utente mostra SUGGERISCI, altrimenti mostra ACCEDI */}
                         {user ? (
                             <>
