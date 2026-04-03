@@ -6,11 +6,10 @@ import {  FiSearch } from "react-icons/fi";
 interface CountryListProps {
     SelectCountry: (country: Country) => void
     SetOverCountry: (country: Country) => void
-    SelectedCountry: Country | null
     countriesData: any[]
 }
 
-export default function CountryList({SelectCountry, SetOverCountry, SelectedCountry, countriesData}: CountryListProps) {
+export default function CountryList({SelectCountry, SetOverCountry, countriesData}: CountryListProps) {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filteredCountries, setFilteredCountries] = useState<any[]>([]); // Per memorizzare i paesi filtrati in base alla ricerca
     const [isModalOpen, setIsModalOpen] = useState(false); // Per gestire l'apertura del modale su mobile
@@ -31,35 +30,6 @@ export default function CountryList({SelectCountry, SetOverCountry, SelectedCoun
         });
         setFilteredCountries(filteredCountries);
     }, [searchTerm, countriesData]);
-
-    // Quando cambia SelectedCountry, aggiorna i suoi dati completi (bandiera, nome italiano, coordinate)
-    useEffect(() => {
-        if (!SelectedCountry || countriesData.length === 0) return;
-        const found = countriesData.find(c => c.ccn3 === SelectedCountry.id);
-        if (!found) return;
-
-        const latlng = found?.capitalInfo?.latlng;
-        const coordinates =
-            Array.isArray(latlng) && latlng.length === 2
-                ? [latlng[0], latlng[1]] // [lng, lat]
-                : undefined;
-
-        const nextCountry: Country = {
-            ...SelectedCountry,
-            flagUrl: found.flags?.png,
-            itName: found?.translations?.ita?.common,
-            coordinates: coordinates as any,
-        };
-
-        const same =
-            SelectedCountry.flagUrl === nextCountry.flagUrl &&
-            SelectedCountry.itName === nextCountry.itName &&
-            JSON.stringify(SelectedCountry.coordinates) === JSON.stringify(nextCountry.coordinates);
-
-        if (!same) {
-            SelectCountry(nextCountry);
-        }
-    }, [SelectedCountry, countriesData, SelectCountry]);
 
     return (
         <>

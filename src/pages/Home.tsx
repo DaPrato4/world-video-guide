@@ -53,7 +53,34 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
     fetchCountries();
   }, []);
 
-  
+  // Quando cambia SelectedCountry, aggiorna i suoi dati completi (bandiera, nome italiano, coordinate)
+  useEffect(() => {
+      if (!selectedCountry || countriesData.length === 0) return;
+      const found : any = countriesData.find((c:any) => c.ccn3 === selectedCountry.id) || countriesData.find((c: any) => String(c.name.common) === String(selectedCountry.name));
+      if (!found) return;
+
+      const latlng = found?.capitalInfo?.latlng;
+      const coordinates =
+          Array.isArray(latlng) && latlng.length === 2
+              ? [latlng[0], latlng[1]] // [lng, lat]
+              : undefined;
+
+      const nextCountry: Country = {
+          ...selectedCountry,
+          flagUrl: found.flags?.png,
+          itName: found?.translations?.ita?.common,
+          coordinates: coordinates as any,
+      };
+
+      const same =
+          selectedCountry.flagUrl === nextCountry.flagUrl &&
+          selectedCountry.itName === nextCountry.itName &&
+          JSON.stringify(selectedCountry.coordinates) === JSON.stringify(nextCountry.coordinates);
+
+      if (!same) {
+          setSelectedCountry(nextCountry);
+      }
+  }, [selectedCountry, countriesData, setSelectedCountry]);
 
 
 
@@ -89,7 +116,6 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
         <CountryList 
           SelectCountry={setSelectedCountry} 
           SetOverCountry={setOverCountry}
-          SelectedCountry={selectedCountry}
           countriesData={countriesData}
         />
 

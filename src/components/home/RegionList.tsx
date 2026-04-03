@@ -93,7 +93,7 @@ export default function RegionList({ onRegionSelect, selectedRegion }: RegionLis
             centeredSlides={true}
             slidesPerView={'auto'}
             initialSlide={2}
-            loop={true} // Loop solo se ci sono più di 1 slide
+            loop={true}
             coverflowEffect={{
               rotate: 0,
               stretch: 0,
