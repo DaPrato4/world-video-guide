@@ -88,6 +88,7 @@ export default function VideoCard({ video, updating, onUpdateStatus }: VideoCard
           {updating === video.id ? "⏳" : "✕"} <span className="inline">Rifiuta</span>
         </button>
       </div>
+      
     </div>
   );
 }

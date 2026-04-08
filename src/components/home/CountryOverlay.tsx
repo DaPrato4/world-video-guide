@@ -58,7 +58,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
     }, []);
 
     // Funzione per aggiungere un nuovo video al database
-    const handleAddVideo = async (videoUrl: string, countryCode: number) => {
+    const handleAddVideo = async (videoUrl: string, countryCode: number, categories: string[] = []) => {
 
         if (!videoUrl) return;
 
@@ -75,6 +75,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
             await addDoc(collection(db, "videos"), {
             url: videoUrl,
             countryCode: Number(countryCode),  // es. 380
+            categories,
             createdAt: new Date(),      // utile per l'ordinamento
             status: "pending",          // Stato iniziale
             submittedBy: user?.uid || "anonymous" // ID dell'utente che ha suggerito (se disponibile)
@@ -267,8 +268,8 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                 <SuggestVideoModal 
                 countryName={countryName}
                 onClose={() => setIsSuggestOverlayOpen(false)}
-                onSubmit={(url) => {
-                    handleAddVideo(url, country.id); // La funzione Firebase
+                onSubmit={(url, categories) => {
+                    handleAddVideo(url, country.id, categories); // La funzione Firebase
                     setIsSuggestOverlayOpen(false);
                 }}
                 />
