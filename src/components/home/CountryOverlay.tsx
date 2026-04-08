@@ -6,6 +6,8 @@ import { db } from "../../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
 import Alert from "../common/Alert";
+import { FiFolderMinus, FiPlus } from "react-icons/fi";
+import { TbWorld } from "react-icons/tb";
 
 interface CountryOverlayProps {
   country: any;
@@ -20,6 +22,9 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
     const [isSuggestOverlayOpen, setIsSuggestOverlayOpen] = useState(false);
     const [videos, setVideos] = useState<video[]>(videosWithoutMetadata ?? []);
     const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [filteredVideos, setFilteredVideos] = useState<video[]>(videosWithoutMetadata ?? []);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
     const countryName = country.itName || country.name || "Nome sconosciuto";
     const countryVideos = videos;
@@ -41,6 +46,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                                 ...element,
                                 title: data.title,
                                 thumbnail: data.thumbnail_url,
+                                categories: element.categories || ["Uncategorized"] // Se non c'è categoria, assegna "Uncategorized"
                             } as video;
                         } catch (err) {
                             console.error("Errore recupero titolo video:", err);
@@ -50,10 +56,25 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                 );
 
                 setVideos(updated);
+                setFilteredVideos(updated);
+
+                // Estrai le categorie uniche dai video aggiornati
+                const uniqueCats = Array.from(new Set(
+                    updated.flatMap(v => v.categories || [])
+                ));
+                setCategories(uniqueCats);
+
             } catch (err) {
                 console.error("Errore aggiornamento metadati video:", err);
             }
+
+
+
         })();
+
+
+
+        console.log("Categorie trovate:", categories);
 
     }, []);
 
@@ -100,6 +121,32 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
         }
     };
 
+    function selectCategory(cat: string) {
+            if (cat === "all") {
+                setSelectedCategories([]);
+                setFilteredVideos(videos);
+                return;
+            }
+
+            const nextSelected = selectedCategories.includes(cat)
+                ? selectedCategories.filter((c) => c !== cat)
+                : [...selectedCategories, cat];
+
+            setSelectedCategories(nextSelected);
+
+            if (nextSelected.length === 0) {
+                setFilteredVideos(videos);
+                return;
+            }
+
+            setFilteredVideos(
+                videos.filter((v) =>
+                    nextSelected.some((c) => v.categories?.includes(c))
+                )
+            );
+        }
+
+
     return (
         <>
         <AnimatePresence>
@@ -136,94 +183,114 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                     type: "spring",
                     bounce: 0.5
                 }} 
-                className="bg-neutral-900 w-full max-w-6xl h-[85vh] rounded-3xl flex overflow-hidden shadow-2xl border border-white/10"
+                className="bg-neutral-900 w-full max-w-6xl h-full md:h-[85vh] rounded-none md:rounded-3xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-white/10"
                 onClick={(e) => e.stopPropagation()} 
             >
                 {/* --- SIDEBAR SINISTRA (Identità e Navigazione) --- */}
-                <aside className="w-1/4 bg-neutral-950 flex flex-col border-r border-white/5">
+                <aside className="w-full md:w-1/4 bg-neutral-950 flex flex-col border-b md:border-b-0 md:border-r border-white/5 max-h-[40vh] md:max-h-full">
                     {/* Intestazione Sidebar con Bandiera */}
-                    <div className="p-6 flex flex-col items-center border-b border-white/5">
+                    <div className="p-4 md:p-6 flex flex-row md:flex-col items-center gap-4 md:gap-0 border-b border-white/5">
                             {flagUrl ? (
-                                <div className="mb-4 bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center">
-                                    <img src={flagUrl} alt="Bandiera" className="max-w-full max-h-30 object-contain" />
+                                <div className="w-16 md:w-full mb-0 md:mb-4 bg-neutral-900 rounded-lg md:rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center shrink-0">
+                                    <img src={flagUrl} alt="Bandiera" className="max-w-full max-h-12 md:max-h-30 object-contain" />
                                 </div>
                             ) : (
-                                <div className="mb-4 rounded-xl animate-pulse bg-neutral-700 w-full h-30"></div>
+                                <div className="w-16 md:w-full mb-0 md:mb-4 rounded-lg md:rounded-xl animate-pulse bg-neutral-700 h-10 md:h-30 shrink-0"></div>
                             )}
-                        <h2 className="text-2xl font-black uppercase tracking-tighter text-white text-center line-clamp-2">
-                            {countryName}
-                        </h2>
-                        <div className="w-12 h-1 bg-blue-500 rounded-full mt-3"></div>
+                        <div className="text-left md:text-center">
+                            <h2 className="text-lg md:text-2xl font-black uppercase tracking-tighter text-white line-clamp-1 md:line-clamp-2">
+                                {countryName}
+                            </h2>
+                            <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto"></div>
+                        </div>
                     </div>
 
-                    {/* Menu Navigazione / Filtri (Placeholder grafici) */}
-                    <nav className="flex-1 p-4 space-y-2 mt-4">
-                        <p className="px-3 text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Esplora</p>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-blue-600/10 text-blue-400 font-medium text-sm transition-all border border-blue-600/20">
-                            <span>🌐</span> Tutti i Video
-                        </button>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-sm transition-all group">
-                            <span className="group-hover:scale-110 transition-transform">🍲</span> Gastronomia
-                        </button>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-sm transition-all group">
-                            <span className="group-hover:scale-110 transition-transform">🏛️</span> Storia & Cultura
-                        </button>
+                    {/* Menu Navigazione / Filtri (Contenitore scrollabile su mobile) */}
+                    <nav className="flex-1 p-4 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden overflow-y-auto scrollbar-none md:mt-4 whitespace-nowrap md:whitespace-normal">
+                        <div className="hidden md:block">
+                            <p className="px-3 text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Categorie</p>
+                        </div>
+                        {categories.length > 0 && (
+                            <>
+                                <button 
+                                    className={"flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group " + (selectedCategories.length === 0 ? "bg-white/10 text-white" : "")}
+                                    onClick={()=>(selectCategory("all"))}
+                                    >
+                                    <span className="group-hover:scale-110 transition-transform"><TbWorld /></span> <span className="md:inline">Tutte le Categorie</span>
+                                </button>
+                                {categories.map((cat) => (
+                                    <button 
+                                        key={cat} 
+                                        className={`flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group ${selectedCategories.includes(cat) ? "bg-white/10 text-white" : ""}`}
+                                        onClick={()=>(
+                                            selectCategory(cat)
+                                        )}
+                                    >
+                                        <span className="group-hover:scale-110 transition-transform"><FiFolderMinus /></span> <span className="md:inline">{cat}</span>
+                                    </button>
+                                ))}
+                            </>
+                        )}
                     </nav>
 
                     {/* Pulsanti Azione in basso alla Sidebar */}
-                    <div className="p-4 space-y-2 mt-auto">
+                    <div className="p-4 flex flex-row md:flex-col gap-2 mt-auto border-t border-white/5 md:border-t-0">
                         {/* LOGICA CONDIZIONALE: Se c'è l'utente mostra SUGGERISCI, altrimenti mostra ACCEDI */}
                         {user ? (
-                            <>
-                                <p className="text-[10px] text-center text-neutral-500">
-                                    Loggato come {user.displayName}
+                            <div className="flex-1 md:flex-none flex flex-col gap-2">
+                                <p className="hidden md:block text-[10px] text-center text-neutral-500">
+                                    {user.displayName}
                                 </p>
                                 <button 
                                     onClick={() => setIsSuggestOverlayOpen(true)}
-                                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all border border-blue-500/20 flex items-center justify-center gap-2"
+                                    className="w-full py-2.5 md:py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all border border-blue-500/20 flex items-center justify-center gap-2"
                                 >
-                                    ➕ SUGGERISCI VIDEO
+                                    <FiPlus />
+                                    <span className="hidden md:inline"> SUGGERISCI VIDEO</span>
+                                    <span className="md:hidden">SUGGERISCI</span>
                                 </button>
-                                
-                            </>
+                            </div>
                         ) : (
                             <button 
                                 onClick={onLogin}
-                                className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
+                                className="flex-1 md:flex-none py-2.5 md:py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
                             >
-                                👤 ACCEDI PER SUGGERIRE
+                                <span className="md:hidden">👤</span>
+                                <span className="hidden md:inline">👤 ACCEDI PER SUGGERIRE</span>
+                                <span className="md:hidden">ACCEDI</span>
                             </button>
                         )}
 
                         <button 
                             onClick={onClose}
-                            className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 text-xs font-bold rounded-xl transition-all border border-red-600/20 mt-2"
+                            className="flex-none md:w-full px-4 md:px-0 py-2.5 md:py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 text-xs font-bold rounded-xl transition-all border border-red-600/20"
                         >
-                            CHIUDI
+                            <span className="hidden md:inline">CHIUDI</span>
+                            <span className="md:hidden">✕</span>
                         </button>
                     </div>
                 </aside>
 
                 {/* --- AREA CONTENUTO DESTRA (Feed Video) --- */}
-                <main className="flex-1 flex flex-col bg-neutral-900/50">
+                <main className="flex-1 flex flex-col bg-neutral-900/50 min-h-0">
                     {/* Header superiore del contenuto */}
-                    <header className="px-8 py-6 flex justify-between items-center border-b border-white/5">
+                        <header className="px-4 py-4 md:px-8 md:py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5">
                         <div>
-                            <h3 className="text-xl font-bold text-white">Discovery Feed</h3>
-                            <p className="text-xs text-neutral-500">Contenuti selezionati per {countryName}</p>
+                            <h3 className="text-lg md:text-xl font-bold text-white uppercase tracking-tight">Discovery Feed</h3>
+                            <p className="text-[10px] md:text-xs text-neutral-500">Contenuti selezionati per {countryName}</p>
                         </div>
-                        <div className="flex gap-2 text-xs text-neutral-400">
+                        <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400">
                             <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700">
-                                {countryVideos.length} Video trovati
+                                {filteredVideos.filter(v => v.status === "approved").length} Video trovati
                             </span>
                         </div>
                     </header>
 
                     {/* Griglia Video con Scroll */}
-                    <div className="flex-1 overflow-y-auto p-8 pr-4 custom-scrollbar">
+                    <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 pr-4 custom-scrollbar touch-pan-y">
                         {countryVideos.length > 0 ? (
-                            <div className="grid grid-cols-2 gap-6">
-                                {countryVideos
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                                {filteredVideos
                                     .filter(v => v.status === "approved")
                                     .map(v => (
                                     <div 
