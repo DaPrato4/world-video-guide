@@ -31,6 +31,7 @@ export interface video {
   suggesterName?: string; // Nome dell'utente che ha suggerito il video (opzionale)
   suggesterEmail?: string; // Email dell'utente che ha suggerito il video (opzionale)
   createdAt?: Date; // Data di creazione
+  categories?: string[]; // Categoria del video (opzionale)
 }
 
 export interface user{
