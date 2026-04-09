@@ -74,7 +74,7 @@ export default function Admin({ user }: { user: user | null }) {
   }, [user]);
 
   // Aggiorna lo stato del video
-  const updateVideoStatus = async (videoId: string, newStatus: "approved" | "rejected") => {
+  const updateVideoStatus = async (videoId: string, newStatus: "approved" | "rejected", reason?: string) => {
     try {
       setUpdating(videoId);
       
@@ -85,7 +85,11 @@ export default function Admin({ user }: { user: user | null }) {
       }
 
       const videoRef = doc(db, "videos", videoId);
-      await updateDoc(videoRef, { status: newStatus });
+      const updateData: any = { status: newStatus };
+      if (newStatus === "rejected" && reason) {
+        updateData.rejectionReason = reason;
+      }
+      await updateDoc(videoRef, updateData);
 
       // Usiamo submittedBy che abbiamo salvato in fase di creazione
       const suggesterUid = targetVideo.submittedBy;

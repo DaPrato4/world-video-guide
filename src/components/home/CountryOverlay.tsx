@@ -6,7 +6,7 @@ import { db } from "../../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
 import Alert from "../common/Alert";
-import { FiFolderMinus, FiPlus } from "react-icons/fi";
+import { FiFolderMinus, FiPlus, FiVideo } from "react-icons/fi";
 import { TbWorld } from "react-icons/tb";
 
 interface CountryOverlayProps {
@@ -60,8 +60,9 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
 
                 // Estrai le categorie uniche dai video aggiornati
                 const uniqueCats = Array.from(new Set(
-                    updated.flatMap(v => v.categories || [])
+                    updated.flatMap(v => v.status === "approved" ? v.categories || [] : [])
                 ));
+                uniqueCats.sort((a, b) => a.localeCompare(b)); // Ordina alfabeticamente
                 setCategories(uniqueCats);
 
             } catch (err) {
@@ -72,9 +73,6 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
 
         })();
 
-
-
-        console.log("Categorie trovate:", categories);
 
     }, []);
 
@@ -191,11 +189,13 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                     {/* Intestazione Sidebar con Bandiera */}
                     <div className="p-4 md:p-6 flex flex-row md:flex-col items-center gap-4 md:gap-0 border-b border-white/5">
                             {flagUrl ? (
-                                <div className="w-16 md:w-full mb-0 md:mb-4 bg-neutral-900 rounded-lg md:rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center shrink-0">
-                                    <img src={flagUrl} alt="Bandiera" className="max-w-full max-h-12 md:max-h-30 object-contain" />
+                                <div className="w-fit max-w-full mb-0 md:mb-4 bg-neutral-900 rounded-lg md:rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center shrink-0">
+                                    <img src={flagUrl} alt="Bandiera" className="block w-auto h-auto max-w-24 md:max-w-full max-h-12 md:max-h-30 object-contain" />
                                 </div>
                             ) : (
-                                <div className="w-16 md:w-full mb-0 md:mb-4 rounded-lg md:rounded-xl animate-pulse bg-neutral-700 h-10 md:h-30 shrink-0"></div>
+                                <div className="w-fit max-w-full mb-0 md:mb-4 rounded-lg md:rounded-xl animate-pulse bg-neutral-700 p-1 md:p-2 shrink-0">
+                                    <div className="w-24 md:w-40 h-12 md:h-30 rounded-md md:rounded-lg bg-neutral-700"></div>
+                                </div>
                             )}
                         <div className="text-left md:text-center">
                             <h2 className="text-lg md:text-2xl font-black uppercase tracking-tighter text-white line-clamp-1 md:line-clamp-2">
@@ -321,7 +321,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                             </div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
-                                <span className="text-6xl mb-4">🏜️</span>
+                                <FiVideo className="text-6xl mb-4 text-neutral-300" />
                                 <p className="text-lg font-medium">Ancora nessun video qui.</p>
                                 <p className="text-sm">Sii il primo a contribuire alla guida!</p>
                             </div>

@@ -8,7 +8,7 @@ interface VideoListProps {
   videos: video[];
   loading: boolean;
   updating: string | null;
-  onUpdateStatus: (videoId: string, newStatus: "approved" | "rejected") => void;
+  onUpdateStatus: (videoId: string, newStatus: "approved" | "rejected", reason?: string) => void;
 }
 
 export default function VideoList({ videos, loading, updating, onUpdateStatus }: VideoListProps) {

@@ -1,13 +1,22 @@
+import { useState } from "react";
 import { FaPlay } from "react-icons/fa";
 import type { video } from "../../types/index";
+import RejectionModal from "./RejectionModal";
 
 interface VideoCardProps {
   video: video;
   updating: string | null;
-  onUpdateStatus: (videoId: string, newStatus: "approved" | "rejected") => void;
+  onUpdateStatus: (videoId: string, newStatus: "approved" | "rejected", reason?: string) => void;
 }
 
 export default function VideoCard({ video, updating, onUpdateStatus }: VideoCardProps) {
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+
+  const handleReject = (reason: string) => {
+    onUpdateStatus(video.id, "rejected", reason);
+    setIsRejectModalOpen(false);
+  };
+
   return (
     <div
       className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 hover:border-white/20 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:bg-neutral-700/70 transition-colors"
@@ -20,11 +29,11 @@ export default function VideoCard({ video, updating, onUpdateStatus }: VideoCard
         className="flex gap-4 flex-1 min-w-0 w-full cursor-pointer group/link"
       >
           {video.thumbnail && (
-          <div className="aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-neutral-900 border border-white/5 group-hover/link:border-blue-500/50 transition-colors relative">
+          <div className="w-32 aspect-video shrink-0 overflow-hidden rounded-lg bg-neutral-900 border border-white/5 group-hover/link:border-blue-500/50 transition-colors relative">
             <img
               src={video.thumbnail}
               alt="Thumbnail"
-              className="w-full h-full object-cover group-hover/link:scale-105 transition-transform duration-500"
+              className="w-full h-full object- group-hover/link:scale-105 transition-transform duration-500"
             />
             <div className="absolute inset-0 bg-black/40 group-hover/link:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover/link:opacity-100 pointer-events-none">
                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full border border-white/30 shadow-2xl group-hover/link:scale-100 transition-transform duration-300">
@@ -66,8 +75,21 @@ export default function VideoCard({ video, updating, onUpdateStatus }: VideoCard
                 </span>
               )}
             </span>
-                                    
           </div>
+
+          {/* Categorie del video */}
+          {video.categories && video.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {video.categories.map((cat, index) => (
+                <span 
+                  key={index}
+                  className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[9px] md:text-[10px] font-medium rounded-full"
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </a>
 
@@ -81,14 +103,22 @@ export default function VideoCard({ video, updating, onUpdateStatus }: VideoCard
           {updating === video.id ? "⏳" : "✓"} <span className="inline">Approva</span>
         </button>
         <button
-          onClick={() => onUpdateStatus(video.id, "rejected")}
+          onClick={() => setIsRejectModalOpen(true)}
           disabled={updating === video.id}
           className="flex-1 sm:flex-none bg-red-600 hover:bg-red-600/80 disabled:bg-neutral-600 disabled:opacity-50 text-white px-3 py-2 md:px-4 md:py-2 rounded-xl font-bold text-xs md:text-sm transition-all cursor-pointer"
         >
           {updating === video.id ? "⏳" : "✕"} <span className="inline">Rifiuta</span>
         </button>
       </div>
-      
+
+      {isRejectModalOpen && (
+        <RejectionModal
+          isOpen={isRejectModalOpen}
+          onClose={() => setIsRejectModalOpen(false)}
+          onConfirm={handleReject}
+          videoTitle={video.title || "Video senza titolo"}
+        />
+      )}
     </div>
   );
 }
