@@ -187,7 +187,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                 {/* --- SIDEBAR SINISTRA (Identità e Navigazione) --- */}
                 <aside className="w-full md:w-1/4 bg-neutral-950 flex flex-col border-b md:border-b-0 md:border-r border-white/5 max-h-[40vh] md:max-h-full">
                     {/* Intestazione Sidebar con Bandiera */}
-                    <div className="p-4 md:p-6 flex flex-row md:flex-col items-center gap-4 md:gap-0 border-b border-white/5">
+                    <div className="p-4 md:p-6 flex flex-row md:flex-col items-center justify-between gap-4 md:gap-0 border-b border-white/5">
                             {flagUrl ? (
                                 <div className="w-fit max-w-full mb-0 md:mb-4 bg-neutral-900 rounded-lg md:rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center shrink-0">
                                     <img src={flagUrl} alt="Bandiera" className="block w-auto h-auto max-w-24 md:max-w-full max-h-12 md:max-h-30 object-contain" />
@@ -197,11 +197,16 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                                     <div className="w-24 md:w-40 h-12 md:h-30 rounded-md md:rounded-lg bg-neutral-700"></div>
                                 </div>
                             )}
-                        <div className="text-left md:text-center">
+                        <div className="text-left md:text-center mr-auto md:mr-0">
                             <h2 className="text-lg md:text-2xl font-black uppercase tracking-tighter text-white line-clamp-1 md:line-clamp-2">
                                 {countryName}
                             </h2>
                             <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto"></div>
+                        </div>
+                        <div className="flex md:hidden gap-2 text-[10px] md:text-xs text-neutral-400">
+                            <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap">
+                                {filteredVideos.filter(v => v.status === "approved").length} Video
+                            </span>
                         </div>
                     </div>
 
@@ -274,9 +279,9 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                 {/* --- AREA CONTENUTO DESTRA (Feed Video) --- */}
                 <main className="flex-1 flex flex-col bg-neutral-900/50 min-h-0">
                     {/* Header superiore del contenuto */}
-                        <header className="px-4 py-4 md:px-8 md:py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5">
+                        <header className="hidden md:flex px-4 py-4 md:px-8 md:py-6 flex-row justify-between items-center sm:items-center gap-4 border-b border-white/5">
                         <div>
-                            <h3 className="text-lg md:text-xl font-bold text-white uppercase tracking-tight">Discovery Feed</h3>
+                            <h3 className="md:text-xl font-bold text-white uppercase tracking-tight">Discovery Feed</h3>
                             <p className="text-[10px] md:text-xs text-neutral-500">Contenuti selezionati per {countryName}</p>
                         </div>
                         <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400">

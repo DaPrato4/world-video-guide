@@ -145,7 +145,7 @@ export default function SuggestVideoModal({  onClose, onSubmit, countryName }: S
 
                   <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
                     <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest ml-1">Aggiungi categoria</label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 sm:gap-2">
                       <input
                         type="text"
                         value={customCategory}
@@ -157,12 +157,12 @@ export default function SuggestVideoModal({  onClose, onSubmit, countryName }: S
                           }
                         }}
                         placeholder="Es. architettura, sport, musica"
-                        className="flex-1 bg-neutral-950 border border-white/5 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-all"
+                        className="flex-1 min-w-0 bg-neutral-950 border border-white/5 rounded-2xl px-3 sm:px-4 py-3 text-white text-sm sm:text-base focus:outline-none focus:border-blue-500 transition-all"
                       />
                       <button
                         type="button"
                         onClick={addCustomCategory}
-                        className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/10"
+                        className="px-3 sm:px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/10 shrink-0"
                       >
                         +
                       </button>

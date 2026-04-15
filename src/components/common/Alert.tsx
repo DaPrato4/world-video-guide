@@ -49,11 +49,11 @@ export default function Alert({ type, message, duration = 3000, onClose }: Alert
                     transition={{ duration: 0.25 }}
                     role="status"
                     aria-live="polite"
-                    className={`fixed top-4 left-1/2 -translate-x-1/2 z-9999`}
+                    className={`fixed top-4 left-1/2 rounded-xl -translate-x-1/2 z-9999 md:w-auto w-[96vw] max-w-md bg-black`}
                 >
-                    <div className={`px-4 py-3 rounded-xl border ${bgColor} flex items-center gap-3 shadow-2xl backdrop-blur-md`}>
-                        <Icon className={`text-xl ${iconColor}`} />
-                        <p className="text-sm text-white font-medium">{message}</p>
+                    <div className={`px-4 py-3 w-full rounded-xl border ${bgColor} flex items-center gap-3 shadow-2xl backdrop-blur-md`}>
+                        <Icon className={`text-xl ${iconColor} min-w-8 h-auto`} />
+                        <p className="text-sm text-white font-medium text-center">{message}</p>
                     </div>
                 </motion.div>
             )}
