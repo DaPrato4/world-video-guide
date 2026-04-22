@@ -1,75 +1,121 @@
-# world-video-guide
 
-# React + TypeScript + Vite
+# World Video Guide
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A personal web app that lets you **explore the world through geolocated YouTube videos by country**.
+Users can suggest content, while **moderators/admins** review it (approve/reject) before it appears publicly on the map.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Interactive map** (world-atlas) with countries highlighted based on the number of approved videos.
+- **Country overlay** with an approved video feed and **category** filters.
+- **Video suggestion** (YouTube URL) with multiple categories + custom category.
+- **Firebase Authentication**: Google, GitHub, Apple, Email/Password.
+- **Moderation**: pending queue, approve/reject with reason.
+- **User profile**: stats, suggested videos list, approved/rejected history, video removal.
+- **Roles**: `user`, `moderator`, `admin` (admin only: user/role management).
 
-## React Compiler
+## Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Vite** + **React 19** + **TypeScript**
+- **Tailwind CSS v4**
+- **Firebase** (Auth + Firestore) + **Firebase Hosting**
+- **react-router-dom** (routing)
+- **react19-simple-maps** (map)
+- **Framer Motion** (UI animations) + Swiper (region selector on mobile)
 
-## Expanding the ESLint configuration
+## Running Locally
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Requirements
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js (recommended **>= 20 LTS**)
+- A Firebase project with Auth + Firestore enabled
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Setup
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1) Install dependencies:
+
+```bash
+npm ci
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2) Configure environment variables:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Create a `.env.local` file starting from `.env.example`.
+- Fill in the values using Firebase Console -> Project settings -> Your apps -> (Web app config).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env.local
 ```
+
+3) Start in development mode:
+
+```bash
+npm run dev
+```
+
+## Available Scripts
+
+- `npm run dev` — starts the development server
+- `npm run build` — production build (TypeScript + Vite)
+- `npm run preview` — build preview
+- `npm run lint` — ESLint
+
+## Firebase: Recommended Configuration
+
+### Authentication
+
+Enable the providers you want to use:
+
+- Google
+- GitHub
+- Apple (`apple.com` via OAuth provider)
+- Email/Password
+
+Note: if you enable GitHub/Apple, you must also configure the **OAuth redirect URIs** in the provider settings.
+
+### Firestore: Used Collections
+
+The app relies on three collections:
+
+- `users` (doc id = `uid`)
+	- `uid`, `email`, `displayName`, `role`, `photoURL`
+	- `stats`: `pendingVideos`, `approvedVideos`, `rejectedVideos`, `suggestedVideos`
+- `videos`
+	- `url` (YouTube)
+	- `countryCode` (numeric, e.g. `380`)
+	- `status`: `pending | approved | rejected`
+	- `categories`: `string[]`
+	- `submittedBy`: `uid`
+	- `createdAt` (Date/Timestamp)
+	- `rejectionReason` (only if rejected)
+- `categories`
+	- documents with a `category` field (label shown in the UI)
+
+### Indexes
+
+In the user profile, a query `where(submittedBy == uid) + orderBy(createdAt desc)` is executed.
+If Firestore requires it, create the **composite index** suggested by the error link in the console.
+
+## Deploy (Firebase Hosting)
+
+The project is already configured as an SPA (rewrite to `index.html`).
+
+```bash
+npm run build
+firebase deploy --only hosting
+```
+
+If you want to target your own Firebase project:
+
+- edit `.firebaserc` or use `firebase use --add`
+
+## Technical Notes
+
+- Video metadata (title/thumbnail) is fetched through **YouTube oEmbed**.
+- Country info (name/flag/capital coordinates) comes from **REST Countries**.
+- The map uses the **world-atlas** dataset (TopoJSON) fetched from a CDN.
+
+## License
+
+MIT - see [LICENSE](LICENSE).
+
