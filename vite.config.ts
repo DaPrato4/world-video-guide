@@ -8,8 +8,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      devOptions: { enabled: false },
       registerType: 'autoUpdate', 
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icons/icon-192x192.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', '/icons/192x192.png', '/offline.html'],
       manifest: {
         name: 'World Video Guide', // Il nome visualizzato nel banner di installazione
         short_name: 'WorldVGuide', // Versione abbreviata per la schermata home
@@ -19,12 +20,12 @@ export default defineConfig({
         start_url: '/', // Indica al browser da quale pagina iniziare 
         icons: [
           {
-            src: 'icons/192x192.png',
+            src: '/icons/192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'icons/512x512.png',
+            src: '/icons/512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
@@ -35,10 +36,23 @@ export default defineConfig({
       workbox: {
         // 1. PRECACHING: Salva subito i file base dell'app (HTML, JS, CSS)
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        navigateFallback: '/index.html', // Per supportare il routing client-side (React Router)
+        navigateFallback: '/index.html', // Se la navigazione fallisce, mostra index.html
+        navigateFallbackAllowlist: [/^(?!\/__).*/],
         
         // 2. RUNTIME CACHING: Gestisce i dati esterni (video, API)
         runtimeCaching: [
+          {
+            // Cache per i dati dei video (es. thumbnail, video stesso)
+            urlPattern: ({ url }) => url.pathname.startsWith('/oembed'),
+            handler: 'CacheFirst', // Leggi prima dalla cache, salva banda
+            options: {
+              cacheName: 'videos-cache',
+              cacheableResponse: {
+                statuses: [200] // Cache solo risposte valide
+              },
+              expiration: { maxEntries: 200 }  //
+            }
+          },
           {
             // Esempio: Cache per le immagini dei video
             urlPattern: ({ request }) => request.destination === 'image',
@@ -49,15 +63,27 @@ export default defineConfig({
             }
           },
           {
-            // Esempio: Cache per i dati dei video (Firebase/API)
-            urlPattern: ({ url }) => url.pathname.startsWith('/api'), 
+            // Cache dei dati geografici (geoData)
+            urlPattern: ({ url }) => url.pathname.startsWith('/npm/world-atlas@2.0.2'), 
             handler: 'CacheFirst',
             options: {
-              cacheName: 'api-cache',
+              cacheName: 'geo-cache',
               cacheableResponse: {
                 statuses: [200] // Cache solo risposte valide
               }
             }
+          },
+          {
+            // Cache dei dati degli stati
+            urlPattern: ({ url }) => url.pathname.startsWith('/v3.1/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'countries-cache',
+              cacheableResponse: {
+                statuses: [200]
+              }
+            }
+
           }
         ]
       }

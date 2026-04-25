@@ -7,15 +7,28 @@ import LoginOverlay from "./LoginOverlay";
 import { TbWorldSearch } from "react-icons/tb";
 import { Link } from "react-router";
 import { FiShield, FiUser } from "react-icons/fi";
+import Alert from "./Alert";
 
 
 
 export default function Header({ user, page }: { user: user | null; page: string }) {
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  
 
   return (
     <>
+
+    {alert && (
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        duration={4000}
+        onClose={() => setAlert(null)}
+      />
+    )}
+
     <header className="bg-neutral-800 border-b border-white/5 p-4 md:p-6 sticky top-0 z-50 shadow-xl">
       <div className="max-w-7xl mx-auto flex flex-row justify-between items-center gap-4">
         <Link to="/">
@@ -57,7 +70,10 @@ export default function Header({ user, page }: { user: user | null; page: string
             <UserMenu user={user} onLogout={() => signOut(auth)} align="right" />
           ) : (
             <button 
-              onClick={() => setIsLoginOpen(true)}
+              onClick={() => {
+                if(navigator.onLine) setIsLoginOpen(true)
+                else setAlert({ type: "error", message: "Sei offline. Connettiti a internet per accedere o registrarti." });
+              }}
               className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all border border-blue-500/20 px-4 py-2"
             >
               Accedi o Registrati

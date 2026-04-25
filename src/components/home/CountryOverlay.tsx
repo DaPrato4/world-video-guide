@@ -301,7 +301,13 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                                     <div 
                                         key={v.id} 
                                         className="group bg-neutral-800/40 rounded-2xl overflow-hidden border border-white/5 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg hover:shadow-blue-500/10"
-                                        onClick={() => window.open(v.url, "_blank")}
+                                        onClick={() => {
+                                            if (navigator.onLine) {
+                                                window.open(v.url, "_blank");
+                                            }else{
+                                                setAlert({ type: "error", message: "Non puoi aprire il video mentre sei offline. Riconnettiti a internet e riprova." });
+                                            }
+                                        }}
                                     >
                                         <div className="relative aspect-video overflow-hidden">
                                             {v.thumbnail ? (
