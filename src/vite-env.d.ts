@@ -1,2 +1,4 @@
+/// <reference types="vite-plugin-pwa/client" />
+
 declare module 'swiper/css';
 declare module 'swiper/css/*';

@@ -8,8 +8,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      devOptions: { enabled: false },
+      devOptions: { enabled: false, type: 'module'},
       registerType: 'autoUpdate', 
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', '/icons/192x192.png', '/offline.html'],
       manifest: {
         name: 'World Video Guide', // Il nome visualizzato nel banner di installazione
@@ -32,60 +35,8 @@ export default defineConfig({
           }
         ]
       },
-
-      workbox: {
-        // 1. PRECACHING: Salva subito i file base dell'app (HTML, JS, CSS)
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        navigateFallback: '/index.html', // Se la navigazione fallisce, mostra index.html
-        navigateFallbackAllowlist: [/^(?!\/__).*/],
-        
-        // 2. RUNTIME CACHING: Gestisce i dati esterni (video, API)
-        runtimeCaching: [
-          {
-            // Cache per i dati dei video (es. thumbnail, video stesso)
-            urlPattern: ({ url }) => url.pathname.startsWith('/oembed'),
-            handler: 'CacheFirst', // Leggi prima dalla cache, salva banda
-            options: {
-              cacheName: 'videos-cache',
-              cacheableResponse: {
-                statuses: [200] // Cache solo risposte valide
-              },
-              expiration: { maxEntries: 200 }  //
-            }
-          },
-          {
-            // Esempio: Cache per le immagini dei video
-            urlPattern: ({ request }) => request.destination === 'image',
-            handler: 'CacheFirst', // Leggi prima dalla cache, salva banda
-            options: {
-              cacheName: 'images-cache',
-              expiration: { maxEntries: 50 }
-            }
-          },
-          {
-            // Cache dei dati geografici (geoData)
-            urlPattern: ({ url }) => url.pathname.startsWith('/npm/world-atlas@2.0.2'), 
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'geo-cache',
-              cacheableResponse: {
-                statuses: [200] // Cache solo risposte valide
-              }
-            }
-          },
-          {
-            // Cache dei dati degli stati
-            urlPattern: ({ url }) => url.pathname.startsWith('/v3.1/'),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'countries-cache',
-              cacheableResponse: {
-                statuses: [200]
-              }
-            }
-
-          }
-        ]
       }
     })
   ]
