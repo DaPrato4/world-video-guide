@@ -6,11 +6,13 @@ import UserVideoList from "../components/profile/UserVideoList";
 import { useState } from "react";
 import LoginOverlay from "../components/common/LoginOverlay";
 import EditProfileOverlay from "../components/profile/EditProfileOverlay";
+import Alert from "../components/common/Alert";
 
 export default function Profile({ user }: { user: user | null}) {
 
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+    const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
     const handleSuggestVideo = () => {
         // Navigare alla pagina Home per suggerire un video
@@ -19,6 +21,17 @@ export default function Profile({ user }: { user: user | null}) {
 
     return (
         <div className="flex flex-col w-screen h-screen bg-neutral-950 text-white overflow-hidden font-sans">
+
+            {alert && (
+                <Alert
+                    type={alert.type}
+                    message={alert.message}
+                    duration={4000}
+                    onClose={() => setAlert(null)}
+                />
+            )}
+            
+
             <Header user={user} page="Profile" />
             
             <main className="grow overflow-y-auto p-4 md:p-8">
@@ -45,7 +58,13 @@ export default function Profile({ user }: { user: user | null}) {
                                     Devi essere autenticato per visualizzare il tuo profilo e i tuoi video.
                                 </p>
                                 <button
-                                    onClick={() => setIsLoginOpen(true)}
+                                    onClick={() => {
+                                        if(navigator.onLine) {
+                                            setIsLoginOpen(true);
+                                        } else {
+                                            setAlert({ type: "error", message: "Sei offline. Connettiti a internet per accedere o registrarti." })
+                                        }
+                                    }}
                                     className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors duration-200 border border-blue-500/30"
                                 >
                                     Accedi

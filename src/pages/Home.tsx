@@ -87,7 +87,7 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
   return (
     <div className="flex flex-col w-screen h-screen bg-neutral-900 text-white overflow-hidden font-sans">
 
-      <Header user={user} page='Home'></Header>
+      <Header user={user} page='Home' ></Header>
 
       {/* Login Overlay */}
       <LoginOverlay

@@ -84,7 +84,7 @@ export default function RegionList({ onRegionSelect, selectedRegion }: RegionLis
   return (
     <>
       {/* MOBILE VIEW - iOS App Style Selector */}
-      <div className="fixed bottom-24 left-0 w-full z-40 lg:hidden pointer-events-none overflow-visible">
+      <div className="fixed bottom-24 left-0 w-full z-15 lg:hidden pointer-events-none overflow-visible">
         <div className="pointer-events-auto w-full"> 
           <Swiper
             modules={[EffectCoverflow]}

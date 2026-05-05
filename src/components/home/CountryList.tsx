@@ -125,7 +125,7 @@ export default function CountryList({SelectCountry, SetOverCountry, countriesDat
             </div>
 
             {/* VERSIONE MOBILE - Bottom Sheet Trascinabile */}
-            <div className={`lg:hidden fixed inset-x-0 bottom-0 z-50 flex flex-col items-center transition-all ${isModalOpen ? 'h-[80vh]' : 'h-17.5'}`}>
+            <div className={`lg:hidden fixed inset-x-0 bottom-0 z-20 flex flex-col items-center transition-all ${isModalOpen ? 'h-[80vh]' : 'h-17.5'}`}>
                 <motion.div
                     initial={{ y: "calc(100% - 70px)" }}
                     animate={{ y: isModalOpen ? 0 : "calc(100% - 70px)" }}

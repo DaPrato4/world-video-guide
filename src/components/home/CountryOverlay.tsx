@@ -6,7 +6,7 @@ import { db } from "../../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
 import Alert from "../common/Alert";
-import { FiFolderMinus, FiPlus, FiVideo } from "react-icons/fi";
+import { FiFolderMinus, FiPlus, FiVideo, FiUser } from "react-icons/fi";
 import { TbWorld } from "react-icons/tb";
 
 interface CountryOverlayProps {
@@ -257,11 +257,19 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                             </div>
                         ) : (
                             <button 
-                                onClick={onLogin}
+                                onClick={
+                                    () => {
+                                        if(navigator.onLine) {
+                                            onLogin()
+                                        } else {
+                                            setAlert({ type: "error", message: "Sei offline. Connettiti a internet per accedere o registrarti." })
+                                        }
+                                    }
+                                }
                                 className="flex-1 md:flex-none py-2.5 md:py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
                             >
-                                <span className="md:hidden">👤</span>
-                                <span className="hidden md:inline">👤 ACCEDI PER SUGGERIRE</span>
+                                <span><FiUser /></span>
+                                <span className="hidden md:inline"> ACCEDI PER SUGGERIRE</span>
                                 <span className="md:hidden">ACCEDI</span>
                             </button>
                         )}
@@ -301,7 +309,13 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                                     <div 
                                         key={v.id} 
                                         className="group bg-neutral-800/40 rounded-2xl overflow-hidden border border-white/5 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg hover:shadow-blue-500/10"
-                                        onClick={() => window.open(v.url, "_blank")}
+                                        onClick={() => {
+                                            if (navigator.onLine) {
+                                                window.open(v.url, "_blank");
+                                            }else{
+                                                setAlert({ type: "error", message: "Non puoi aprire il video mentre sei offline. Riconnettiti a internet e riprova." });
+                                            }
+                                        }}
                                     >
                                         <div className="relative aspect-video overflow-hidden">
                                             {v.thumbnail ? (
