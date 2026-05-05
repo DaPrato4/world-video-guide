@@ -6,7 +6,7 @@ import { db } from "../../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
 import Alert from "../common/Alert";
-import { FiFolderMinus, FiPlus, FiVideo } from "react-icons/fi";
+import { FiFolderMinus, FiPlus, FiVideo, FiUser } from "react-icons/fi";
 import { TbWorld } from "react-icons/tb";
 
 interface CountryOverlayProps {
@@ -257,11 +257,19 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                             </div>
                         ) : (
                             <button 
-                                onClick={onLogin}
+                                onClick={
+                                    () => {
+                                        if(navigator.onLine) {
+                                            onLogin()
+                                        } else {
+                                            setAlert({ type: "error", message: "Sei offline. Connettiti a internet per accedere o registrarti." })
+                                        }
+                                    }
+                                }
                                 className="flex-1 md:flex-none py-2.5 md:py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
                             >
-                                <span className="md:hidden">👤</span>
-                                <span className="hidden md:inline">👤 ACCEDI PER SUGGERIRE</span>
+                                <span><FiUser /></span>
+                                <span className="hidden md:inline"> ACCEDI PER SUGGERIRE</span>
                                 <span className="md:hidden">ACCEDI</span>
                             </button>
                         )}
