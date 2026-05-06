@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import type { user, video } from "./types";
 import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { requestForToken, onMessageListener } from './firebase';
 
 
 // App.tsx
@@ -16,6 +17,19 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
 
+  useEffect(() => {
+    requestForToken();
+
+    onMessageListener()
+      .then((payload: any) => {
+        console.log("Notifica ricevuta in App.tsx:", payload);
+        console.log(`${payload.notification.title}: ${payload.notification.body}`);
+        //da implementare sistema per visualizzare notifiche in-app quando si è attivi sulla pagina, ad esempio con un Alert o simili
+      })
+      .catch((err) => console.log('Errore listener notifiche:', err));
+  }, []);
+
+  //Gestione autenticazione e dati utente in tempo reale
   useEffect(() => {
     let unsubscribeUserDoc: () => void = () => {};
 
@@ -71,6 +85,7 @@ export default function App() {
     };
   }, []);
 
+  // Gestione stato online/offline
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);

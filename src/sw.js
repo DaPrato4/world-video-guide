@@ -3,6 +3,8 @@ import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { initializeApp } from "firebase/app";
+import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw";
 
 // 1. PRECACHING
 precacheAndRoute(self.__WB_MANIFEST);
@@ -11,8 +13,7 @@ precacheAndRoute(self.__WB_MANIFEST);
 registerRoute(
   ({ url }) => url.host === 'upload.wikimedia.org' && url.pathname.includes('Flag_of_the_Taliban'),
   
-  async () => {    
-    // Questo è l'URL della bandiera che VUOI far vedere
+  async () => {
     const urlGiusta = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Flag_of_Afghanistan_%282013%E2%80%932021%29.svg/960px-Flag_of_Afghanistan_%282013%E2%80%932021%29.svg.png';
     
     try {
@@ -20,7 +21,7 @@ registerRoute(
       return response;
     } catch (err) {
       console.error("Errore nel caricamento della bandiera sostitutiva", err);
-      return fetch('/icons/icon-192x192.png');
+      return fetch('/icons/192x192.png');
     }
   }
 );
@@ -77,3 +78,31 @@ registerRoute(
     ]
   })
 );
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyBXIpv19n2NcA8uMpREfrHAgMhpVbQaKO8',
+  authDomain: 'prova-mappa-f1d90.firebaseapp.com',
+  projectId: 'prova-mappa-f1d90',
+  storageBucket: 'prova-mappa-f1d90.firebasestorage.app',
+  messagingSenderId: '657564154400',
+  appId: '1:657564154400:web:8daf0ff43bd049a7c1da45',
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+export const messaging = getMessaging(app);
+
+// Gestione notifiche quando l'app è chiusa o in background
+onBackgroundMessage(messaging, (payload) => {
+  console.log('[sw.js] Notifica ricevuta in background:', payload);
+  
+  const notificationTitle = payload.notification.title || 'Nuovo aggiornamento!';
+  const notificationOptions = {
+    body: payload.notification.body || 'Controlla la mappa dei video.',
+    icon: '/icons/192x192.png',
+    badge: '/icons/192x192.png', // Icona piccola nella barra di stato
+    data: payload.data // Dati extra per gestire il click
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});

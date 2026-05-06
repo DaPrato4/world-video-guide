@@ -13,7 +13,19 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.js',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', '/icons/192x192.png', '/offline.html'],
+      includeAssets: [
+        'favicon.ico',
+        'apple-touch-icon.png',
+        '/icons/192x192.png',
+        '/icons/512x512.png',
+        '/pwa-192x192.png',
+        '/pwa-512x512.png',
+        '/pwa-maskable-192x192.png',
+        '/pwa-maskable-512x512.png',
+        '/screenshot-1.png',
+        '/screenshot-2.png',
+        '/offline.html'
+      ],
       manifest: {
         name: 'World Video Guide', // Il nome visualizzato nel banner di installazione
         short_name: 'WorldVGuide', // Versione abbreviata per la schermata home
@@ -23,15 +35,41 @@ export default defineConfig({
         start_url: '/', // Indica al browser da quale pagina iniziare 
         icons: [
           {
-            src: '/icons/192x192.png',
+            src: '/pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: '/icons/512x512.png',
+            src: '/pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
+          },
+          {
+            src: '/pwa-maskable-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable'
+          },
+          {
+            src: '/pwa-maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          }
+        ],
+        screenshots: [
+          {
+            src: '/screenshot-1.png',
+            sizes: '512x512',
+            type: 'image/png',
+            form_factor: 'wide'
+          },
+          {
+            src: '/screenshot-2.png',
+            sizes: '512x512',
+            type: 'image/png'
           }
         ]
       },
