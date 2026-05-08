@@ -6,8 +6,11 @@ import { db } from "../../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
 import Alert from "../common/Alert";
-import { FiFolderMinus, FiPlus, FiVideo, FiUser } from "react-icons/fi";
+import { FiFolderMinus, FiPlus, FiVideo, FiUser, FiBell } from "react-icons/fi";
 import { TbWorld } from "react-icons/tb";
+
+import { getToken } from "firebase/messaging";
+import { messaging } from "../../firebase";
 
 interface CountryOverlayProps {
   country: any;
@@ -25,6 +28,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
     const [categories, setCategories] = useState<string[]>([]);
     const [filteredVideos, setFilteredVideos] = useState<video[]>(videosWithoutMetadata ?? []);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [isSubscribing, setIsSubscribing] = useState(false);
 
     const countryName = country.itName || country.name || "Nome sconosciuto";
     const countryVideos = videos;
@@ -75,6 +79,61 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
 
 
     }, []);
+
+    const handleSubscribeToCountry = async () => {
+        if (!user) {
+            setAlert({ type: "error", message: "Devi accedere per attivare le notifiche." });
+            return;
+        }
+
+        setIsSubscribing(true);
+        try {
+            // 1. Chiediamo il permesso al browser
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                setAlert({ type: "error", message: "Devi consentire le notifiche nel browser per iscriverti." });
+                setIsSubscribing(false);
+                return;
+            }
+
+            // 2. Otteniamo il token del dispositivo
+            // Sostituisci la chiave con la tua VAPID KEY pubblica di Firebase
+            const currentToken = await getToken(messaging, { 
+                vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY 
+            });
+
+            if (!currentToken) {
+                setAlert({ type: "error", message: "Impossibile generare il token delle notifiche." });
+                setIsSubscribing(false);
+                return;
+            }
+
+            // 3. Inviamo il token al nostro fantastico server Express!
+            // Usiamo country.name o l'ID, l'importante è che coincida con quello salvato nei video
+            const response = await fetch('https://world-video-guide-backend.onrender.com/api/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: currentToken,
+                    country: country.name // o countryName, dipende da come lo salvi in Firestore
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                setAlert({ type: "success", message: `🔔 Notifiche attivate per ${countryName}!` });
+            } else {
+                throw new Error("Errore dal server");
+            }
+
+        } catch (error) {
+            console.error("Errore iscrizione:", error);
+            setAlert({ type: "error", message: "Si è verificato un errore durante l'attivazione delle notifiche." });
+        } finally {
+            setIsSubscribing(false);
+        }
+    };
 
     // Funzione per aggiungere un nuovo video al database
     const handleAddVideo = async (videoUrl: string, countryCode: number, categories: string[] = []) => {
@@ -203,10 +262,20 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                             </h2>
                             <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto"></div>
                         </div>
-                        <div className="flex md:hidden gap-2 text-[10px] md:text-xs text-neutral-400">
-                            <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap">
+                        <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400 mt-2">
+                            <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap flex items-center">
                                 {filteredVideos.filter(v => v.status === "approved").length} Video
                             </span>
+                            
+                            {/* NUOVO BOTTONE NOTIFICHE */}
+                            <button 
+                                onClick={handleSubscribeToCountry}
+                                disabled={isSubscribing}
+                                className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30 whitespace-nowrap flex items-center gap-1 transition-colors disabled:opacity-50"
+                            >
+                                <FiBell className={isSubscribing ? "animate-pulse" : ""} />
+                                {isSubscribing ? "Attivazione..." : "Segui"}
+                            </button>
                         </div>
                     </div>
 

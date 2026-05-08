@@ -96,12 +96,15 @@ export const messaging = getMessaging(app);
 onBackgroundMessage(messaging, (payload) => {
   console.log('[sw.js] Notifica ricevuta in background:', payload);
   
-  const notificationTitle = payload.notification.title || 'Nuovo aggiornamento!';
+  const notificationTitle = payload.data.title || 'Nuovo aggiornamento!';
   const notificationOptions = {
-    body: payload.notification.body || 'Controlla la mappa dei video.',
-    icon: '/icons/192x192.png',
-    badge: '/icons/192x192.png', // Icona piccola nella barra di stato
-    data: payload.data // Dati extra per gestire il click
+    body: payload.data.body,
+    icon: '/pwa-192x192.png',    // Icona a colori (quella che si vede nel popup)
+    badge: '/badge-72x72.png',   // Icona bianca (quella nella barra in alto)
+    vibrate: [100, 50, 100],     // vibrazione personalizzata
+    data: {
+      url: payload.data?.url || '/'
+    }
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
