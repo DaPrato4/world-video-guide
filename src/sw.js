@@ -93,13 +93,31 @@ const app = initializeApp(firebaseConfig);
 export const messaging = getMessaging(app);
 
 // Gestione notifiche quando l'app è chiusa o in background
-onBackgroundMessage(messaging, (payload) => {
+onBackgroundMessage(messaging, async (payload) => {
   console.log('[sw.js] Notifica ricevuta in background:', payload);
   
   const notificationTitle = payload.data.title || 'Nuovo aggiornamento!';
+
+  let iconUrl;
+  try {
+    const res = await fetch(`https://restcountries.com/v3.1/alpha/${payload.data.countryCode}`);
+    console.log('[sw.js] Risposta RestCountries:', res);
+    if (res.ok) {
+      const countryData = await res.json();
+      const resIcon = await fetch(`https://hatscripts.github.io/circle-flags/flags/${countryData[0].cca2.toLowerCase()}.svg`)
+      if (resIcon.ok) {
+        iconUrl = `https://hatscripts.github.io/circle-flags/flags/${countryData[0].cca2.toLowerCase()}.svg`;
+      }else{
+        iconUrl = '/icons/192x192.png';
+      }
+    }
+  } catch (err) {
+    console.error('[sw.js] Errore nel recupero icona del paese:', err);
+  }
+
   const notificationOptions = {
     body: payload.data.body,
-    icon: '/pwa-192x192.png',    // Icona a colori (quella che si vede nel popup)
+    icon: iconUrl,    // Icona a colori (quella che si vede nel popup)
     badge: '/badge-72x72.png',   // Icona bianca (quella nella barra in alto)
     vibrate: [100, 50, 100],     // vibrazione personalizzata
     data: {
