@@ -22,14 +22,33 @@ export default function Admin({ user }: { user: user | null }) {
         const querySnapshot = await getDocs(q);
         
         const videosPromises = querySnapshot.docs.map(async (doc) => {
-          try {
             const d = doc.data() as any;
-            const res = await fetch(`https://www.youtube.com/oembed?url=${d.url}&format=json`);
-            const datayoutube = await res.json();
-            const rescountry = await fetch(`https://restcountries.com/v3.1/alpha/${d.countryCode}`);
-            const datacountry = await rescountry.json();
+
+            let datayoutube;
+            try {
+              const resYoutube = await fetch(`https://www.youtube.com/oembed?url=${d.url}&format=json`);
+              datayoutube = await resYoutube.json();
+            } catch (error) {
+              console.error("Errore nel fetch dei dati di YouTube (possibile video non valido):", d.url, error);
+              datayoutube = { title: "Video non disponibile", thumbnail_url: null };
+            }
+
+            let datacountry;
+            try {
+              const countryCode = String(d.countryCode).padStart(3, '0'); // Assicurati che il codice sia a 3 cifre
+              const rescountry = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+              if (!rescountry.ok) {
+                throw new Error(`HTTP error! status: ${rescountry.status}`);
+              }
+              datacountry = await rescountry.json();
+            } catch (error) {
+              console.error("Errore nel fetch dei dati del paese:", d.countryCode, error);
+              datacountry = [{ name: { common: "Paese non disponibile" }, flags: { png: null } }];
+            }
+            console.log("Dati fetchati per video:", datayoutube, datacountry);
             // Prendiamo anche il DisplayName dello user che ha suggerito il video
             const suggesterQuery = query(collection(db, "users"), where("uid", "==", d.submittedBy));
+            console.log("Query per trovare suggeritore:", d);
             const suggesterSnapshot = await getDocs(suggesterQuery);
             const suggesterData = suggesterSnapshot.empty ? null : suggesterSnapshot.docs[0].data() as any;
             return {
@@ -42,20 +61,6 @@ export default function Admin({ user }: { user: user | null }) {
               suggesterEmail: suggesterData?.email || "Email non disponibile",
               ...d
             } as video;
-          } catch (error) {
-            console.error("Errore nel recupero dei dati di YouTube per il video:", doc.id, error);
-            const d = doc.data() as any;
-            return {
-              id: doc.id,
-              thumbnail: null,
-              title: "Video senza titolo",
-              country: "Paese non disponibile",
-              flag: null,
-              suggesterName: "Utente sconosciuto",
-              suggesterEmail: "Email non disponibile",
-              ...d
-            } as video;
-          }
         });
 
         const videos = await Promise.all(videosPromises);

@@ -1,0 +1,1 @@
+export const EXPRESS_API_URL = "https://world-video-guide-backend.onrender.com/api";

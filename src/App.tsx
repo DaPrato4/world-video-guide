@@ -3,10 +3,14 @@ import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import { auth, db } from "./firebase";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import type { user, video } from "./types";
 import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { requestForToken } from './firebase';
+import { EXPRESS_API_URL } from "./apiConfig";
+import Alert from "./components/common/Alert";
+import { getMessaging, onMessage } from "firebase/messaging";
 
 
 // App.tsx
@@ -15,7 +19,35 @@ export default function App() {
   const [videos, setVideos] = useState<video[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
+  const [notificationAlert, setNotificationAlert] = useState<{ title: string; message: string } | null>(null);
 
+  const prevSubscriptionsRef = useRef<string[] | null>(null);
+
+  useEffect(() => {
+    requestForToken();
+
+    const messaging = getMessaging();
+
+    const unsubscribeForeground = onMessage(messaging, (payload: any) => {
+      console.log("Notifica ricevuta in FOREGROUND:", payload);
+      
+      const title = payload?.notification?.title ?? payload?.data?.title ?? "Notifica";
+      const body = payload?.notification?.body ?? payload?.data?.body ?? "Hai una nuova notifica! Controlla il tuo profilo.";
+
+      // Mostriamo l'Alert a schermo
+      setNotificationAlert({
+        title: `${title}`,
+        message: `${body}`
+      });
+    });
+
+    return () => {
+      unsubscribeForeground();
+    };
+
+  }, []);
+
+  //Gestione autenticazione e dati utente in tempo reale
   useEffect(() => {
     let unsubscribeUserDoc: () => void = () => {};
 
@@ -23,10 +55,84 @@ export default function App() {
       if (firebaseUser) {
         const userDocRef = doc(db, "users", firebaseUser.uid);
 
+        const setupNotifications = async () => {
+          try {
+            const currentToken = await requestForToken();
+            
+            if (currentToken) {
+              await fetch(`${EXPRESS_API_URL}/subscribeAll`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  token: currentToken, 
+                  uid: firebaseUser.uid 
+                })
+              });
+              
+              console.log("Iscrizione ai topic sincronizzata!");
+            }
+          } catch (error) {
+            console.error("Errore durante la registrazione per le notifiche:", error);
+          }
+        };
+        setupNotifications();
+
         // Ascolta i cambiamenti in tempo reale sul documento dell'utente
-        unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap) => {
+        unsubscribeUserDoc = onSnapshot(userDocRef, async (docSnap) => {
           if (docSnap.exists()) {
             const userData = docSnap.data();
+            const newSubscriptions = userData.subscriptions || [];
+
+            if (prevSubscriptionsRef.current !== null) {
+              const addedCountries = newSubscriptions.filter(
+                (country : string) => !prevSubscriptionsRef.current!.includes(country)
+              );
+
+              const removedCountries = prevSubscriptionsRef.current.filter(
+                (country : string) => !newSubscriptions.includes(country)
+              );
+
+              if (addedCountries.length > 0 || removedCountries.length > 0) {
+                console.log("Rilevate nuove iscrizioni da un altro dispositivo:", addedCountries);
+                console.log("Rilevate cancellazioni da un altro dispositivo:", removedCountries);
+
+                try {
+                  const currentToken = await requestForToken();
+                  if (currentToken) {
+                    // eseguiamo tutte le iscrizioni ai nuovi paesi aggiunti
+                    for (const country of addedCountries) {
+                      await fetch(`${EXPRESS_API_URL}/subscribe`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                          token: currentToken, 
+                          country: country, 
+                          uid: firebaseUser.uid 
+                        })
+                      });
+                    }
+
+                    // eseguiamo tutte le cancellazioni dai paesi rimossi
+                    for (const country of removedCountries) {
+                      await fetch(`${EXPRESS_API_URL}/unsubscribe`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                          token: currentToken, 
+                          country: country, 
+                          uid: firebaseUser.uid 
+                        })
+                      });
+                    }
+                    console.log("Dispositivo auto-sincronizzato con i nuovi paesi!");
+                  }
+                } catch (error) {
+                  console.error("Errore di auto-sincronizzazione in background:", error);
+                }
+              }
+            }
+            prevSubscriptionsRef.current = newSubscriptions;
+
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email ?? "",
@@ -34,6 +140,7 @@ export default function App() {
               role: (userData.role as "user" | "moderator" | "admin") ?? "user",
               photoURL: firebaseUser.photoURL ?? "",
               stats: userData.stats || { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
+              subscriptions: userData.subscriptions || [],
             });
           } else {
             // Se il documento non esiste, lo creiamo (fatto una sola volta)
@@ -44,6 +151,7 @@ export default function App() {
               role: "user",
               photoURL: firebaseUser.photoURL ?? "",
               stats: { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
+              subscriptions: [],
             };
             setDoc(userDocRef, newUser);
             setUser(newUser);
@@ -71,6 +179,7 @@ export default function App() {
     };
   }, []);
 
+  // Gestione stato online/offline
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
@@ -123,6 +232,14 @@ export default function App() {
   return (
     <>
       {offlineBanner}
+      {notificationAlert && (
+        <Alert
+          type="info"
+          message={notificationAlert.message}
+          duration={5000}
+          onClose={() => setNotificationAlert(null)}
+        />
+      )}
       <Router>
         <Routes>
           <Route path="/" element={<Home user={user} videos={videos} />} />

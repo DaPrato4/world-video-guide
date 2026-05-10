@@ -55,16 +55,34 @@ export default function UserVideoList({
 
         const videosWithThumbnails = await Promise.all(
           videosData.map(async (video) => {
-            const res = await fetch(`https://www.youtube.com/oembed?url=${video.url}&format=json`);
-            const data = await res.json();
-            const countryInfo = await fetch(`https://restcountries.com/v3.1/alpha/${video.countryCode}`);
-            const countryData = await countryInfo.json();
-            const flagUrl = countryData[0]?.flags?.png || null;
+            let datayoutube;
+            try {
+              const resYoutube = await fetch(`https://www.youtube.com/oembed?url=${video.url}&format=json`);
+              datayoutube = await resYoutube.json();
+            } catch (error) {
+              console.error("Errore nel fetch dei dati di YouTube (possibile video non valido):", video.url, error);
+              datayoutube = { title: "Video non disponibile", thumbnail_url: null };
+            }
+
+            let datacountry;
+            try {
+              const countryCode = String(video.countryCode).padStart(3, '0'); // Assicurati che il codice sia a 3 cifre
+              const rescountry = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+              if (!rescountry.ok) {
+                throw new Error(`HTTP error! status: ${rescountry.status}`);
+              }
+              datacountry = await rescountry.json();
+            } catch (error) {
+              console.error("Errore nel fetch dei dati del paese:", video.countryCode, error);
+              datacountry = [{ name: { common: "Paese non disponibile" }, flags: { png: null } }];
+            }
+
+            const flagUrl = datacountry[0]?.flags?.png || null;
             return {
               ...video,
-              thumbnail: data.thumbnail_url,
-              title: data.title,
-              country: countryData[0]?.name?.common || "Paese sconosciuto",
+              thumbnail: datayoutube.thumbnail_url,
+              title: datayoutube.title,
+              country: datacountry[0]?.name?.common || "Paese sconosciuto",
               flag: flagUrl,
               
             } as video & { thumbnail?: string };

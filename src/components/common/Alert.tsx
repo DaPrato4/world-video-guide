@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { HiCheckCircle, HiExclamationTriangle } from "react-icons/hi2";
+import { HiCheckCircle, HiExclamationTriangle, HiInformationCircle } from "react-icons/hi2";
 
 interface AlertProps {
-    type: "success" | "error";
+    type: "success" | "error" | "info";
     message: string;
     duration?: number; // Durata in millisecondi prima di scomparire
     onClose?: () => void; // callback opzionale chiamata dopo che l'alert si è nascosto
@@ -35,9 +35,9 @@ export default function Alert({ type, message, duration = 3000, onClose }: Alert
         }
     }, [visible, onClose]);
 
-    const Icon = type === "success" ? HiCheckCircle : HiExclamationTriangle;
-    const iconColor = type === "success" ? "text-green-500" : "text-red-500";
-    const bgColor = type === "success" ? "bg-green-500/10 border-green-500/20" : "bg-red-500/10 border-red-500/20";
+    const Icon = type === "success" ? HiCheckCircle : type === "error" ? HiExclamationTriangle : HiInformationCircle;
+    const iconColor = type === "success" ? "text-green-500" : type === "error" ? "text-red-500" : "text-blue-500";
+    const bgColor = type === "success" ? "bg-green-500/10 border-green-500/20" : type === "error" ? "bg-red-500/10 border-red-500/20" : "bg-blue-500/10 border-blue-500/20";
 
     return (
         <AnimatePresence>

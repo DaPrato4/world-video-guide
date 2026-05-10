@@ -6,8 +6,12 @@ import { db } from "../../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
 import Alert from "../common/Alert";
-import { FiFolderMinus, FiPlus, FiVideo, FiUser } from "react-icons/fi";
+import { FiFolderMinus, FiPlus, FiVideo, FiUser, FiBell, FiBellOff } from "react-icons/fi";
 import { TbWorld } from "react-icons/tb";
+
+import { getToken } from "firebase/messaging";
+import { messaging } from "../../firebase";
+import { EXPRESS_API_URL } from "../../apiConfig";
 
 interface CountryOverlayProps {
   country: any;
@@ -25,6 +29,8 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
     const [categories, setCategories] = useState<string[]>([]);
     const [filteredVideos, setFilteredVideos] = useState<video[]>(videosWithoutMetadata ?? []);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [isSubscribing, setIsSubscribing] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(user?.subscriptions?.includes(country.name) || false);
 
     const countryName = country.itName || country.name || "Nome sconosciuto";
     const countryVideos = videos;
@@ -68,13 +74,109 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
             } catch (err) {
                 console.error("Errore aggiornamento metadati video:", err);
             }
-
-
-
         })();
+
+        // controlla se l'utente è già iscritto alle notifiche di questo paese
+        setIsSubscribed(user?.subscriptions?.includes(country.name) || false);
 
 
     }, []);
+
+    const handleSubscribeToCountry = async () => {
+        if (!user) {
+            setAlert({ type: "error", message: "Devi accedere per attivare le notifiche." });
+            return;
+        }
+
+        setIsSubscribing(true);
+        try {
+            // 1. Chiediamo il permesso al browser
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                setAlert({ type: "error", message: "Devi consentire le notifiche nel browser per iscriverti." });
+                setIsSubscribing(false);
+                return;
+            }
+
+            // 2. Otteniamo il token del dispositivo
+            const currentToken = await getToken(messaging, { 
+                vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY 
+            });
+
+            if (!currentToken) {
+                setAlert({ type: "error", message: "Impossibile generare il token delle notifiche." });
+                setIsSubscribing(false);
+                return;
+            }
+
+            // 3. Inviamo il token al server per associarlo all'utente e al paese scelto
+            const response = await fetch(`${EXPRESS_API_URL}/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: currentToken,
+                    country: country.name, 
+                    uid: user.uid
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                setAlert({ type: "success", message: `Notifiche attivate per ${countryName}!` });
+                setIsSubscribed(true);
+            } else {
+                throw new Error("Errore dal server");
+            }
+            console.log("utente iscritto: ", user);
+            console.log("stato iscritto: ", country.name, user.subscriptions?.includes(country.name));
+        } catch (error) {
+            console.error("Errore iscrizione:", error);
+            setAlert({ type: "error", message: "Si è verificato un errore durante l'attivazione delle notifiche." });
+        } finally {
+            setIsSubscribing(false);
+        }
+    };
+
+    const handleUnsubscribeFromCountry = async () => {
+        // Logica per disiscrivere l'utente dalle notifiche del paese
+        setIsSubscribing(true);
+        try {
+            const currentToken = await getToken(messaging, { 
+                vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY 
+            });
+
+            if (!currentToken) {
+                setAlert({ type: "error", message: "Impossibile generare il token delle notifiche." });
+                setIsSubscribing(false);
+                return;
+            }
+
+            const response = await fetch(`${EXPRESS_API_URL}/unsubscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    country: country.name,
+                    uid: user.uid,
+                    token: currentToken
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setAlert({ type: "success", message: `Notifiche disattivate per ${countryName}!` });
+                setIsSubscribed(false);
+            } else {
+                throw new Error("Errore dal server");
+            }
+        } catch (error) {
+            console.error("Errore disiscrizione:", error);
+            setAlert({ type: "error", message: "Si è verificato un errore durante la disattivazione delle notifiche." });
+        } finally {
+            setIsSubscribing(false);
+        }
+    };
 
     // Funzione per aggiungere un nuovo video al database
     const handleAddVideo = async (videoUrl: string, countryCode: number, categories: string[] = []) => {
@@ -203,10 +305,29 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                             </h2>
                             <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto"></div>
                         </div>
-                        <div className="flex md:hidden gap-2 text-[10px] md:text-xs text-neutral-400">
-                            <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap">
+                        <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400 mt-2">
+                            <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap flex items-center">
                                 {filteredVideos.filter(v => v.status === "approved").length} Video
                             </span>
+                            
+                            {/* BOTTONE NOTIFICHE */}
+                            {isSubscribed ? (
+                            <button 
+                                onClick={handleUnsubscribeFromCountry}
+                                disabled={isSubscribing}
+                                className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30 whitespace-nowrap flex items-center gap-1 transition-colors disabled:opacity-50"
+                            >
+                                <FiBell className={isSubscribing ? "animate-pulse" : ""} />
+                            </button>
+                            ) : (
+                            <button 
+                                onClick={handleSubscribeToCountry}
+                                disabled={isSubscribing}
+                                className="bg-neutral-800 hover:bg-neutral-700 text-neutral-400 px-3 py-1 rounded-full border border-neutral-700/50 whitespace-nowrap flex items-center gap-1 transition-colors disabled:opacity-50"
+                            >
+                                <FiBellOff className={isSubscribing ? "animate-pulse" : ""} />
+                            </button>
+                            )}
                         </div>
                     </div>
 

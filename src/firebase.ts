@@ -1,13 +1,8 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getMessaging, getToken } from "firebase/messaging";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -22,6 +17,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
-  // Keep Firestore documents available across app restarts while offline.
   localCache: persistentLocalCache(),
 });
+
+
+// Inizializza Firebase Cloud Messaging
+export const messaging = getMessaging(app);
+
+export const requestForToken = async () => {
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const currentToken = await getToken(messaging, { 
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+      serviceWorkerRegistration: registration,
+    });
+    if (currentToken) {
+      console.log('Token generato:', currentToken);
+      // da implementare invio del token al backend per associarlo all'utente e poter inviare notifiche mirate
+      return currentToken;
+    } else {
+      console.log('Nessun token disponibile. Richiedi il permesso.');
+    }
+  } catch (err) {
+    console.error('Errore durante il recupero del token:', err);
+  }
+};
