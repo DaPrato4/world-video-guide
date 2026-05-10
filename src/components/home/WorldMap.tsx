@@ -108,7 +108,7 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
                 {({ geographies }) =>
                     geographies.map((geo, index) => {
                     const countryCode = geo.id || 0-index;
-                    const videoNumber = videoCountsByCountry[countryCode] || 0;
+                    const videoNumber = videoCountsByCountry[parseInt(countryCode)] || 0;
                     const hasVideo = videoNumber > 0;
                     return (
                         <Geography
