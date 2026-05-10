@@ -40,7 +40,8 @@ export interface user{
   email: string;
   displayName: string;
   role: "user" | "moderator" | "admin";
-  photoURL?: string; // URL dell'immagine del profilo (opzionale)
+  photoURL?: string; 
+  subscriptions?: string[];
   stats?: {
     pendingVideos: number;
     approvedVideos: number;

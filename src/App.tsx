@@ -8,6 +8,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import type { user, video } from "./types";
 import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { requestForToken, onMessageListener } from './firebase';
+import { EXPRESS_API_URL } from "./apiConfig";
 
 
 // App.tsx
@@ -37,6 +38,27 @@ export default function App() {
       if (firebaseUser) {
         const userDocRef = doc(db, "users", firebaseUser.uid);
 
+        const setupNotifications = async () => {
+          try {
+            const currentToken = await requestForToken();
+            
+            if (currentToken) {
+              await fetch(`${EXPRESS_API_URL}/subscribeAll`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  token: currentToken, 
+                  uid: firebaseUser.uid 
+                })
+              });
+              console.log("Iscrizione ai topic sincronizzata!");
+            }
+          } catch (error) {
+            console.error("Errore durante la registrazione per le notifiche:", error);
+          }
+        };
+        setupNotifications();
+
         // Ascolta i cambiamenti in tempo reale sul documento dell'utente
         unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
@@ -48,6 +70,7 @@ export default function App() {
               role: (userData.role as "user" | "moderator" | "admin") ?? "user",
               photoURL: firebaseUser.photoURL ?? "",
               stats: userData.stats || { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
+              subscriptions: userData.subscriptions || [],
             });
           } else {
             // Se il documento non esiste, lo creiamo (fatto una sola volta)
@@ -58,6 +81,7 @@ export default function App() {
               role: "user",
               photoURL: firebaseUser.photoURL ?? "",
               stats: { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
+              subscriptions: [],
             };
             setDoc(userDocRef, newUser);
             setUser(newUser);
