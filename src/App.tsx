@@ -3,7 +3,7 @@ import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import { auth, db } from "./firebase";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import type { user, video } from "./types";
 import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
@@ -17,6 +17,8 @@ export default function App() {
   const [videos, setVideos] = useState<video[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
+
+  const prevSubscriptionsRef = useRef<string[] | null>(null);
 
   useEffect(() => {
     requestForToken();
@@ -51,6 +53,7 @@ export default function App() {
                   uid: firebaseUser.uid 
                 })
               });
+              
               console.log("Iscrizione ai topic sincronizzata!");
             }
           } catch (error) {
@@ -60,9 +63,61 @@ export default function App() {
         setupNotifications();
 
         // Ascolta i cambiamenti in tempo reale sul documento dell'utente
-        unsubscribeUserDoc = onSnapshot(userDocRef, (docSnap) => {
+        unsubscribeUserDoc = onSnapshot(userDocRef, async (docSnap) => {
           if (docSnap.exists()) {
             const userData = docSnap.data();
+            const newSubscriptions = userData.subscriptions || [];
+
+            if (prevSubscriptionsRef.current !== null) {
+              const addedCountries = newSubscriptions.filter(
+                (country : string) => !prevSubscriptionsRef.current!.includes(country)
+              );
+
+              const removedCountries = prevSubscriptionsRef.current.filter(
+                (country : string) => !newSubscriptions.includes(country)
+              );
+
+              if (addedCountries.length > 0 || removedCountries.length > 0) {
+                console.log("Rilevate nuove iscrizioni da un altro dispositivo:", addedCountries);
+                console.log("Rilevate cancellazioni da un altro dispositivo:", removedCountries);
+
+                try {
+                  const currentToken = await requestForToken();
+                  if (currentToken) {
+                    // eseguiamo tutte le iscrizioni ai nuovi paesi aggiunti
+                    for (const country of addedCountries) {
+                      await fetch(`${EXPRESS_API_URL}/subscribe`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                          token: currentToken, 
+                          country: country, 
+                          uid: firebaseUser.uid 
+                        })
+                      });
+                    }
+
+                    // eseguiamo tutte le cancellazioni dai paesi rimossi
+                    for (const country of removedCountries) {
+                      await fetch(`${EXPRESS_API_URL}/unsubscribe`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                          token: currentToken, 
+                          country: country, 
+                          uid: firebaseUser.uid 
+                        })
+                      });
+                    }
+                    console.log("Dispositivo auto-sincronizzato con i nuovi paesi!");
+                  }
+                } catch (error) {
+                  console.error("Errore di auto-sincronizzazione in background:", error);
+                }
+              }
+            }
+            prevSubscriptionsRef.current = newSubscriptions;
+
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email ?? "",

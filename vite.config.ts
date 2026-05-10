@@ -14,8 +14,6 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.js',
       includeAssets: [
-        'favicon.ico',
-        'apple-touch-icon.png',
         '/icons/192x192.png',
         '/icons/512x512.png',
         '/pwa-192x192.png',
@@ -24,7 +22,8 @@ export default defineConfig({
         '/pwa-maskable-512x512.png',
         '/screenshot-1.png',
         '/screenshot-2.png',
-        '/offline.html'
+        '/offline.html',
+        '/badge-72x72.png'
       ],
       manifest: {
         name: 'World Video Guide', // Il nome visualizzato nel banner di installazione
@@ -57,6 +56,12 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
+          },
+          {
+            src: '/badge-72x72.png',
+            sizes: '72x72',
+            type: 'image/png',
+            purpose: 'monochrome'
           }
         ],
         screenshots: [
