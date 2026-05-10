@@ -29,7 +29,6 @@ async function fetchCountryDetails(countryName: string): Promise<FollowedCountry
 		const data = await response.json();
 		const country = data?.[0];
 
-        console.error(country);
 		return {
 			name: countryName,
 			label: country?.translations?.ita?.common || country?.name?.common || countryName,

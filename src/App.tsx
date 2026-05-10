@@ -7,8 +7,10 @@ import { useEffect, useState, useRef } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import type { user, video } from "./types";
 import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
-import { requestForToken, onMessageListener } from './firebase';
+import { requestForToken } from './firebase';
 import { EXPRESS_API_URL } from "./apiConfig";
+import Alert from "./components/common/Alert";
+import { getMessaging, onMessage } from "firebase/messaging";
 
 
 // App.tsx
@@ -17,19 +19,32 @@ export default function App() {
   const [videos, setVideos] = useState<video[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(() => !navigator.onLine);
+  const [notificationAlert, setNotificationAlert] = useState<{ title: string; message: string } | null>(null);
 
   const prevSubscriptionsRef = useRef<string[] | null>(null);
 
   useEffect(() => {
     requestForToken();
 
-    onMessageListener()
-      .then((payload: any) => {
-        console.log("Notifica ricevuta in App.tsx:", payload);
-        console.log(`${payload.notification.title}: ${payload.notification.body}`);
-        //da implementare sistema per visualizzare notifiche in-app quando si è attivi sulla pagina, ad esempio con un Alert o simili
-      })
-      .catch((err) => console.log('Errore listener notifiche:', err));
+    const messaging = getMessaging();
+
+    const unsubscribeForeground = onMessage(messaging, (payload: any) => {
+      console.log("Notifica ricevuta in FOREGROUND:", payload);
+      
+      const title = payload?.notification?.title ?? payload?.data?.title ?? "Notifica";
+      const body = payload?.notification?.body ?? payload?.data?.body ?? "Hai una nuova notifica! Controlla il tuo profilo.";
+
+      // Mostriamo l'Alert a schermo
+      setNotificationAlert({
+        title: `${title}`,
+        message: `${body}`
+      });
+    });
+
+    return () => {
+      unsubscribeForeground();
+    };
+
   }, []);
 
   //Gestione autenticazione e dati utente in tempo reale
@@ -217,6 +232,14 @@ export default function App() {
   return (
     <>
       {offlineBanner}
+      {notificationAlert && (
+        <Alert
+          type="info"
+          message={notificationAlert.message}
+          duration={5000}
+          onClose={() => setNotificationAlert(null)}
+        />
+      )}
       <Router>
         <Routes>
           <Route path="/" element={<Home user={user} videos={videos} />} />

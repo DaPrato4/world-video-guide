@@ -42,12 +42,3 @@ export const requestForToken = async () => {
     console.error('Errore durante il recupero del token:', err);
   }
 };
-
-// Notifiche ad app aperta
-export const onMessageListener = () =>
-  new Promise((resolve) => {
-    onMessage(messaging, (payload) => {
-      console.log("Messaggio ricevuto in foreground:", payload);
-      resolve(payload);
-    });
-  });
