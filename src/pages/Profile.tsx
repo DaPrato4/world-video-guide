@@ -2,6 +2,7 @@ import type { user } from "../types";
 import Header from "../components/common/Header";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import StatsGrid from "../components/profile/StatsGrid";
+import FollowedCountry from "../components/profile/FollowedCountry";
 import UserVideoList from "../components/profile/UserVideoList";
 import { useState } from "react";
 import LoginOverlay from "../components/common/LoginOverlay";
@@ -43,6 +44,9 @@ export default function Profile({ user }: { user: user | null}) {
 
                             {/* Stats Grid */}
                             <StatsGrid user={user} />
+
+                            {/* Followed Countries */}
+                            <FollowedCountry user={user} />
 
                             {/* User Video List */}
                             <UserVideoList user={user} onSuggestVideo={handleSuggestVideo} />
