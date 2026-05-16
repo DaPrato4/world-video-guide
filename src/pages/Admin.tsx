@@ -142,7 +142,15 @@ export default function Admin({ user }: { user: user | null }) {
       try {
         await Promise.all(brandNewCategories.map(async (cat) => {
           const newCategoryRef = doc(collection(db, "categories"));
-          await setDoc(newCategoryRef, { category: cat });
+
+          const capitalizedCat = cat.charAt(0).toUpperCase() + cat.slice(1);
+          await setDoc(newCategoryRef, { 
+            category: capitalizedCat,
+            aliases: []
+          });
+
+          // Aggiorniamo anche lo stato locale di Admin per non dover ricaricare la pagina
+          setOfficialCategories(prev => [...prev, { value: newCategoryRef.id, label: capitalizedCat, aliases: [] }]);
         }));
       } catch (error) {
         console.error("Errore nell'aggiungere le nuove categorie:", error);
