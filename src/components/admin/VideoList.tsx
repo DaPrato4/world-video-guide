@@ -8,10 +8,12 @@ interface VideoListProps {
   videos: video[];
   loading: boolean;
   updating: string | null;
-  onUpdateStatus: (videoId: string, newStatus: "approved" | "rejected", reason?: string) => void;
+  onUpdateStatus: (videoId: string, newStatus: "approved" | "rejected", reason?: string, updatedCategories?: string[], brandNewCategories?: string[]) => void;
+  officialCategories: { value: string; label: string; aliases?: string[] }[];
+  onAddAlias: (categoryId: string, newAlias: string) => Promise<void>;
 }
 
-export default function VideoList({ videos, loading, updating, onUpdateStatus }: VideoListProps) {
+export default function VideoList({ videos, loading, updating, onUpdateStatus, officialCategories, onAddAlias }: VideoListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredVideos = videos.filter(v => 
@@ -83,7 +85,9 @@ export default function VideoList({ videos, loading, updating, onUpdateStatus }:
                 <VideoCard 
                   video={video} 
                   updating={updating} 
-                  onUpdateStatus={onUpdateStatus} 
+                  onUpdateStatus={onUpdateStatus}
+                  onAddAlias={onAddAlias} 
+                  officialCategories={officialCategories}
                 />
               </motion.div>
             ))}

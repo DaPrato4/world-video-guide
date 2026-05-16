@@ -32,11 +32,7 @@ export const requestForToken = async () => {
       serviceWorkerRegistration: registration,
     });
     if (currentToken) {
-      console.log('Token generato:', currentToken);
-      // da implementare invio del token al backend per associarlo all'utente e poter inviare notifiche mirate
       return currentToken;
-    } else {
-      console.log('Nessun token disponibile. Richiedi il permesso.');
     }
   } catch (err) {
     console.error('Errore durante il recupero del token:', err);

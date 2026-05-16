@@ -29,7 +29,6 @@ export default function Header({ user, page }: { user: user | null; page: string
         });
         
         if (currentToken) {
-          console.log("Tentativo di disiscrizione al logout in corso...");
           await fetch(`${EXPRESS_API_URL}/unsubscribeAll`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { collection, query, where, getDocs, updateDoc, doc, increment } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, doc, increment, arrayUnion, setDoc } from "firebase/firestore";
 import type { user, video } from "../types/index"
 import Header from "../components/common/Header";
 import VideoList from "../components/admin/VideoList";
@@ -11,6 +11,27 @@ export default function Admin({ user }: { user: user | null }) {
   const [pendingVideos, setPendingVideos] = useState<video[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [officialCategories, setOfficialCategories] = useState<{ value: string; label: string; aliases?: string[] }[]>([]);
+
+  // Carica le categorie ufficiali
+  useEffect(() => {
+    const fetchOfficialCategories = async () => {
+      try {
+        const categoriesColRef = collection(db, "categories");
+        const querySnapshot = await getDocs(categoriesColRef);
+        const categoriesArray = querySnapshot.docs.map(doc => ({
+          value: doc.id,
+          label: doc.data().category,
+          aliases: doc.data().aliases || [],
+        }));
+        setOfficialCategories(categoriesArray);
+      } catch (error) {
+        console.error("Errore nel caricamento delle categorie ufficiali:", error);
+      }
+    };
+
+    fetchOfficialCategories();
+  }, []);
 
   // Carica i video in stato pending
   useEffect(() => {
@@ -45,10 +66,8 @@ export default function Admin({ user }: { user: user | null }) {
               console.error("Errore nel fetch dei dati del paese:", d.countryCode, error);
               datacountry = [{ name: { common: "Paese non disponibile" }, flags: { png: null } }];
             }
-            console.log("Dati fetchati per video:", datayoutube, datacountry);
             // Prendiamo anche il DisplayName dello user che ha suggerito il video
             const suggesterQuery = query(collection(db, "users"), where("uid", "==", d.submittedBy));
-            console.log("Query per trovare suggeritore:", d);
             const suggesterSnapshot = await getDocs(suggesterQuery);
             const suggesterData = suggesterSnapshot.empty ? null : suggesterSnapshot.docs[0].data() as any;
             return {
@@ -79,7 +98,7 @@ export default function Admin({ user }: { user: user | null }) {
   }, [user]);
 
   // Aggiorna lo stato del video
-  const updateVideoStatus = async (videoId: string, newStatus: "approved" | "rejected", reason?: string) => {
+  const updateVideoStatus = async (videoId: string, newStatus: "approved" | "rejected", reason?: string, updatedCategories?: string[], brandNewCategories?: string[]) => {
     try {
       setUpdating(videoId);
       
@@ -93,6 +112,9 @@ export default function Admin({ user }: { user: user | null }) {
       const updateData: any = { status: newStatus };
       if (newStatus === "rejected" && reason) {
         updateData.rejectionReason = reason;
+      }
+      if (newStatus === "approved") {
+        updateData.categories = updatedCategories || [];
       }
       await updateDoc(videoRef, updateData);
 
@@ -113,6 +135,39 @@ export default function Admin({ user }: { user: user | null }) {
       console.error("Errore nell'aggiornamento del video:", error);
     } finally {
       setUpdating(null);
+    }
+
+    // Se ci sono nuove categorie da aggiungere, le aggiungiamo al database
+    if (brandNewCategories && brandNewCategories.length > 0) {
+      try {
+        await Promise.all(brandNewCategories.map(async (cat) => {
+          const newCategoryRef = doc(collection(db, "categories"));
+          await setDoc(newCategoryRef, { category: cat });
+        }));
+      } catch (error) {
+        console.error("Errore nell'aggiungere le nuove categorie:", error);
+      }
+    }
+  };
+
+  // Aggiunge un alias a una categoria ufficiale
+  const handleAddAlias = async (categoryId: string, newAlias: string) => {
+    try {
+      const categoryDocRef = doc(db, "categories", categoryId);
+      await updateDoc(categoryDocRef, {
+        aliases: arrayUnion(newAlias.toLowerCase())
+      });
+      // Aggiorniamo lo stato locale per riflettere il cambiamento
+      setOfficialCategories(current => 
+        current.map(cat => 
+          cat.value === categoryId 
+            ? { ...cat, aliases: [...(cat.aliases || []), newAlias.toLowerCase()] }
+            : cat
+        )
+      );
+    } catch (error) {
+      console.error("Errore nell'aggiungere l'alias:", error);
+      throw error; // Rilanciamo l'errore per gestirlo nel componente figlio se necessario
     }
   };
 
@@ -144,7 +199,9 @@ export default function Admin({ user }: { user: user | null }) {
             videos={pendingVideos} 
             loading={loading} 
             updating={updating} 
-            onUpdateStatus={updateVideoStatus} 
+            onUpdateStatus={updateVideoStatus}
+            officialCategories={officialCategories}
+            onAddAlias={handleAddAlias}
           />
         </div>
         {user.role === "admin" && (

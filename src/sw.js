@@ -94,14 +94,12 @@ export const messaging = getMessaging(app);
 
 // Gestione notifiche quando l'app è chiusa o in background
 onBackgroundMessage(messaging, async (payload) => {
-  console.log('[sw.js] Notifica ricevuta in background:', payload);
   
   const notificationTitle = payload.data.title || 'Nuovo aggiornamento!';
 
   let iconUrl;
   try {
     const res = await fetch(`https://restcountries.com/v3.1/alpha/${payload.data.countryCode}`);
-    console.log('[sw.js] Risposta RestCountries:', res);
     if (res.ok) {
       const countryData = await res.json();
       const resIcon = await fetch(`https://hatscripts.github.io/circle-flags/flags/${countryData[0].cca2.toLowerCase()}.svg`)

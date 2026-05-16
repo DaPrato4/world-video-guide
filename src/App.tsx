@@ -29,7 +29,6 @@ export default function App() {
     const messaging = getMessaging();
 
     const unsubscribeForeground = onMessage(messaging, (payload: any) => {
-      console.log("Notifica ricevuta in FOREGROUND:", payload);
       
       const title = payload?.notification?.title ?? payload?.data?.title ?? "Notifica";
       const body = payload?.notification?.body ?? payload?.data?.body ?? "Hai una nuova notifica! Controlla il tuo profilo.";
@@ -69,7 +68,6 @@ export default function App() {
                 })
               });
               
-              console.log("Iscrizione ai topic sincronizzata!");
             }
           } catch (error) {
             console.error("Errore durante la registrazione per le notifiche:", error);

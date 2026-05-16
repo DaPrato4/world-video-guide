@@ -128,8 +128,6 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
             } else {
                 throw new Error("Errore dal server");
             }
-            console.log("utente iscritto: ", user);
-            console.log("stato iscritto: ", country.name, user.subscriptions?.includes(country.name));
         } catch (error) {
             console.error("Errore iscrizione:", error);
             setAlert({ type: "error", message: "Si è verificato un errore durante l'attivazione delle notifiche." });

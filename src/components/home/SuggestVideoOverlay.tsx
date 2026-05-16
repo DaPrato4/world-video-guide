@@ -46,7 +46,7 @@ export default function SuggestVideoModal({  onClose, onSubmit, countryName }: S
   };
 
   const addCustomCategory = () => {
-    const nextCategory = customCategory.trim();
+    const nextCategory = customCategory.trim().toLocaleLowerCase();
 
     if (!nextCategory) return;
 

@@ -74,7 +74,6 @@ export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCo
             name: geo.properties.name,
             capitalName: countriesByCode.get(String(geo.id))?.capital?.[0] || countriesData.find((c: any) => String(c.name.common) === String(geo.properties.name))?.capital?.[0] || "N/A",
         };
-        console.log("Paese cliccato:", country);
         SelectCountry(country);
     };
 
