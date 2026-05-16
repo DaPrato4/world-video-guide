@@ -330,27 +330,30 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                     </div>
 
                     {/* Menu Navigazione / Filtri (Contenitore scrollabile su mobile) */}
-                    <nav className="flex-1 p-4 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden overflow-y-auto scrollbar-none md:mt-4 whitespace-nowrap md:whitespace-normal">
-                        <div className="hidden md:block">
+                    <nav className="flex-1 w-full p-4 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden overflow-y-hidden md:overflow-y-auto scrollbar-none md:mt-4">
+                        <div className="hidden md:block shrink-0">
                             <p className="px-3 text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Categorie</p>
                         </div>
+                        
                         {categories.length > 0 && (
                             <>
                                 <button 
-                                    className={"flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group " + (selectedCategories.length === 0 ? "bg-white/10 text-white" : "")}
+                                    className={"flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group shrink-0 " + (selectedCategories.length === 0 ? "bg-white/10 text-white" : "")}
                                     onClick={()=>(selectCategory("all"))}
                                     >
                                     <span className="group-hover:scale-110 transition-transform"><TbWorld /></span> <span className="md:inline">Tutte le Categorie</span>
                                 </button>
+                                
                                 {categories.map((cat) => (
                                     <button 
                                         key={cat} 
-                                        className={`flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group ${selectedCategories.includes(cat) ? "bg-white/10 text-white" : ""}`}
+                                        className={`flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group shrink-0 ${selectedCategories.includes(cat) ? "bg-white/10 text-white" : ""}`}
                                         onClick={()=>(
                                             selectCategory(cat)
                                         )}
                                     >
-                                        <span className="group-hover:scale-110 transition-transform"><FiFolderMinus /></span> <span className="md:inline">{cat}</span>
+                                        <span className="group-hover:scale-110 transition-transform"><FiFolderMinus /></span> 
+                                        <span className="md:inline">{cat}</span>
                                     </button>
                                 ))}
                             </>
