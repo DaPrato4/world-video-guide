@@ -281,7 +281,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                     type: "spring",
                     bounce: 0.5
                 }} 
-                className="bg-neutral-900 w-full max-w-6xl h-full md:h-[85vh] rounded-none md:rounded-3xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-white/10"
+                className="bg-neutral-900 w-full max-w-6xl h-full md:h-[85vh] rounded-xl md:rounded-3xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-white/10"
                 onClick={(e) => e.stopPropagation()} 
             >
                 {/* --- SIDEBAR SINISTRA (Identità e Navigazione) --- */}
@@ -297,11 +297,11 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                                     <div className="w-24 md:w-40 h-12 md:h-30 rounded-md md:rounded-lg bg-neutral-700"></div>
                                 </div>
                             )}
-                        <div className="text-left md:text-center mr-auto md:mr-0">
-                            <h2 className="text-lg md:text-2xl font-black uppercase tracking-tighter text-white line-clamp-1 md:line-clamp-2">
+                        <div className="text-left md:text-center mr-auto md:mr-0 flex-1 min-w-0 px-2 md:px-0">
+                            <h2 className="text-lg md:text-2xl font-black uppercase tracking-tighter text-white line-clamp-1 md:line-clamp-2 wrap-break-words">
                                 {countryName}
                             </h2>
-                            <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto"></div>
+                            <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto shrink-0"></div>
                         </div>
                         <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400 mt-2">
                             <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap flex items-center">
