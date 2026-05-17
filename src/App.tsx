@@ -91,8 +91,6 @@ export default function App() {
               );
 
               if (addedCountries.length > 0 || removedCountries.length > 0) {
-                console.log("Rilevate nuove iscrizioni da un altro dispositivo:", addedCountries);
-                console.log("Rilevate cancellazioni da un altro dispositivo:", removedCountries);
 
                 try {
                   const currentToken = await requestForToken();
@@ -122,7 +120,6 @@ export default function App() {
                         })
                       });
                     }
-                    console.log("Dispositivo auto-sincronizzato con i nuovi paesi!");
                   }
                 } catch (error) {
                   console.error("Errore di auto-sincronizzazione in background:", error);
@@ -130,7 +127,6 @@ export default function App() {
               }
             }
             prevSubscriptionsRef.current = newSubscriptions;
-            console.log("Dati utente aggiornati in tempo reale:", userData);
 
             setUser({
               uid: firebaseUser.uid,

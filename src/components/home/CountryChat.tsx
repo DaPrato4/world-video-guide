@@ -32,7 +32,6 @@ export default function CountryChat({ countryId, countryName, user, onClose, onA
             const snapshot = await getDocs(q);
             const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setComments(fetched);
-            console.log("Commenti caricati:", fetched);
         } catch (error) {
             console.error("Errore caricamento commenti:", error);
         } finally {
@@ -104,7 +103,6 @@ export default function CountryChat({ countryId, countryName, user, onClose, onA
             await updateDoc(commentRef, {
                 reportedComments: arrayUnion(commentId)
             });
-            console.log("commenti segnalati dall'utente:", user.reportedComments);
             onAlert("Commento segnalato. Grazie per il tuo feedback!", true);
         } catch (error) {
             console.error("Errore segnalazione commento:", error);

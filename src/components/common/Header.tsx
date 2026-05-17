@@ -39,9 +39,8 @@ export default function Header({ user, page }: { user: user | null; page: string
           });
         }
       } catch (error) {
-        // L'utente non ha mai accettato le notifiche o è offline. 
-        // Va bene così, non blocchiamo il logout.
-        console.log("Nessun token attivo per la disiscrizione al logout.");
+        // L'utente non ha mai accettato le notifiche o è offline. Non è un errore critico, quindi lo logghiamo ma non blocchiamo la disconnessione.
+        console.warn("Non è stato possibile disiscrivere dalle notifiche (l'utente potrebbe non averle accettate o essere offline):", error);
       }
     }
 
