@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { video } from "../../types";
+import type { Country, video } from "../../types";
 import { collection, addDoc, doc, updateDoc, increment, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
@@ -13,8 +13,11 @@ import { getToken } from "firebase/messaging";
 import { messaging } from "../../firebase";
 import { EXPRESS_API_URL } from "../../apiConfig";
 
+import { FiMessageCircle } from "react-icons/fi"; // Assicurati di averla importata
+import CountryChat from "./CountryChat"; // Il nuovo componente
+
 interface CountryOverlayProps {
-  country: any;
+  country: Country;
   videos: video[];
   onClose: () => void;
   user: any;
@@ -34,6 +37,8 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
 
     const countryName = country.itName || country.name || "Nome sconosciuto";
     const countryVideos = videos;
+
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     // Quando il componente si monta, recupera titolo e thumbnail per ciascuno usando l'endpoint oEmbed di YouTube
     useEffect(() => {
@@ -281,196 +286,237 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                     type: "spring",
                     bounce: 0.5
                 }} 
-                className="bg-neutral-900 w-full max-w-6xl h-full md:h-[85vh] rounded-xl md:rounded-3xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-white/10"
+                className=" w-full max-w-6xl 2xl:max-w-full h-full md:h-[85vh] flex flex-row gap-2 md:flex-row overflow-hidden justify-center items-center"
                 onClick={(e) => e.stopPropagation()} 
             >
-                {/* --- SIDEBAR SINISTRA (Identità e Navigazione) --- */}
-                <aside className="w-full md:w-1/4 bg-neutral-950 flex flex-col border-b md:border-b-0 md:border-r border-white/5 max-h-[40vh] md:max-h-full">
-                    {/* Intestazione Sidebar con Bandiera */}
-                    <div className="p-4 md:p-6 flex flex-row md:flex-col items-center justify-between gap-4 md:gap-0 border-b border-white/5">
-                            {flagUrl ? (
-                                <div className="w-fit max-w-full mb-0 md:mb-4 bg-neutral-900 rounded-lg md:rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center shrink-0">
-                                    <img src={flagUrl} alt="Bandiera" className="block w-auto h-auto max-w-24 md:max-w-full max-h-12 md:max-h-30 object-contain" />
-                                </div>
-                            ) : (
-                                <div className="w-fit max-w-full mb-0 md:mb-4 rounded-lg md:rounded-xl animate-pulse bg-neutral-700 p-1 md:p-2 shrink-0">
-                                    <div className="w-24 md:w-40 h-12 md:h-30 rounded-md md:rounded-lg bg-neutral-700"></div>
-                                </div>
-                            )}
-                        <div className="text-left md:text-center mr-auto md:mr-0 flex-1 min-w-0 px-2 md:px-0">
-                            <h2 className="text-lg md:text-2xl font-black uppercase tracking-tighter text-white line-clamp-1 md:line-clamp-2 wrap-break-words">
-                                {countryName}
-                            </h2>
-                            <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto shrink-0"></div>
-                        </div>
-                        <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400 mt-2">
-                            <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap flex items-center">
-                                {filteredVideos.filter(v => v.status === "approved").length} Video
-                            </span>
-                            
-                            {/* BOTTONE NOTIFICHE */}
-                            {isSubscribed ? (
-                            <button 
-                                onClick={handleUnsubscribeFromCountry}
-                                disabled={isSubscribing}
-                                className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30 whitespace-nowrap flex items-center gap-1 transition-colors disabled:opacity-50"
-                            >
-                                <FiBell className={isSubscribing ? "animate-pulse" : ""} />
-                            </button>
-                            ) : (
-                            <button 
-                                onClick={handleSubscribeToCountry}
-                                disabled={isSubscribing}
-                                className="bg-neutral-800 hover:bg-neutral-700 text-neutral-400 px-3 py-1 rounded-full border border-neutral-700/50 whitespace-nowrap flex items-center gap-1 transition-colors disabled:opacity-50"
-                            >
-                                <FiBellOff className={isSubscribing ? "animate-pulse" : ""} />
-                            </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Menu Navigazione / Filtri (Contenitore scrollabile su mobile) */}
-                    <nav className="flex-1 w-full p-4 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden overflow-y-hidden md:overflow-y-auto scrollbar-none md:mt-4">
-                        <div className="hidden md:block shrink-0">
-                            <p className="px-3 text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Categorie</p>
-                        </div>
-                        
-                        {categories.length > 0 && (
-                            <>
-                                <button 
-                                    className={"flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group shrink-0 " + (selectedCategories.length === 0 ? "bg-white/10 text-white" : "")}
-                                    onClick={()=>(selectCategory("all"))}
-                                    >
-                                    <span className="group-hover:scale-110 transition-transform"><TbWorld /></span> <span className="md:inline">Tutte le Categorie</span>
-                                </button>
-                                
-                                {categories.map((cat) => (
-                                    <button 
-                                        key={cat} 
-                                        className={`flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group shrink-0 ${selectedCategories.includes(cat) ? "bg-white/10 text-white" : ""}`}
-                                        onClick={()=>(
-                                            selectCategory(cat)
-                                        )}
-                                    >
-                                        <span className="group-hover:scale-110 transition-transform"><FiFolderMinus /></span> 
-                                        <span className="md:inline">{cat}</span>
-                                    </button>
-                                ))}
-                            </>
-                        )}
-                    </nav>
-
-                    {/* Pulsanti Azione in basso alla Sidebar */}
-                    <div className="p-4 flex flex-row md:flex-col gap-2 mt-auto border-t border-white/5 md:border-t-0">
-                        {/* LOGICA CONDIZIONALE: Se c'è l'utente mostra SUGGERISCI, altrimenti mostra ACCEDI */}
-                        {user ? (
-                            <div className="flex-1 md:flex-none flex flex-col gap-2">
-                                <p className="hidden md:block text-[10px] text-center text-neutral-500">
-                                    {user.displayName}
-                                </p>
-                                <button 
-                                    onClick={() => setIsSuggestOverlayOpen(true)}
-                                    className="w-full py-2.5 md:py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all border border-blue-500/20 flex items-center justify-center gap-2"
-                                >
-                                    <FiPlus />
-                                    <span className="hidden md:inline"> SUGGERISCI VIDEO</span>
-                                    <span className="md:hidden">SUGGERISCI</span>
-                                </button>
+                <div className="bg-neutral-900 w-full max-w-6xl h-full md:h-[85vh] rounded-xl md:rounded-3xl flex flex-col md:flex-row overflow-hidden shadow-2xl border border-white/10">
+                    {/* --- SIDEBAR SINISTRA (Identità e Navigazione) --- */}
+                    <aside className="w-full md:w-1/4 bg-neutral-950 flex flex-col border-b md:border-b-0 md:border-r border-white/5 max-h-[40vh] md:max-h-full">
+                        {/* Intestazione Sidebar con Bandiera */}
+                        <div className="p-4 md:p-6 flex flex-row md:flex-col items-center justify-between gap-4 md:gap-0 border-b border-white/5">
+                                {flagUrl ? (
+                                    <div className="w-fit max-w-full mb-0 md:mb-4 bg-neutral-900 rounded-lg md:rounded-xl overflow-hidden border border-neutral-800 shadow-2xl flex items-center justify-center shrink-0">
+                                        <img src={flagUrl} alt="Bandiera" className="block w-auto h-auto max-w-24 md:max-w-full max-h-12 md:max-h-30 object-contain" />
+                                    </div>
+                                ) : (
+                                    <div className="w-fit max-w-full mb-0 md:mb-4 rounded-lg md:rounded-xl animate-pulse bg-neutral-700 p-1 md:p-2 shrink-0">
+                                        <div className="w-24 md:w-40 h-12 md:h-30 rounded-md md:rounded-lg bg-neutral-700"></div>
+                                    </div>
+                                )}
+                            <div className="text-left md:text-center mr-auto md:mr-0 flex-1 min-w-0 px-2 md:px-0">
+                                <h2 className="text-lg md:text-2xl font-black uppercase tracking-tighter text-white line-clamp-1 md:line-clamp-2 wrap-break-words">
+                                    {countryName}
+                                </h2>
+                                <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto shrink-0"></div>
                             </div>
-                        ) : (
-                            <button 
-                                onClick={
-                                    () => {
-                                        if(navigator.onLine) {
-                                            onLogin()
-                                        } else {
-                                            setAlert({ type: "error", message: "Sei offline. Connettiti a internet per accedere o registrarti." })
+                            <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400 mt-2">
+                                <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap flex items-center">
+                                    {filteredVideos.filter(v => v.status === "approved").length} Video
+                                </span>
+                                
+                                {/* BOTTONE NOTIFICHE */}
+                                {isSubscribed ? (
+                                <button 
+                                    onClick={handleUnsubscribeFromCountry}
+                                    disabled={isSubscribing}
+                                    className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30 whitespace-nowrap flex items-center gap-1 transition-colors disabled:opacity-50"
+                                >
+                                    <FiBell className={isSubscribing ? "animate-pulse" : ""} />
+                                </button>
+                                ) : (
+                                <button 
+                                    onClick={handleSubscribeToCountry}
+                                    disabled={isSubscribing}
+                                    className="bg-neutral-800 hover:bg-neutral-700 text-neutral-400 px-3 py-1 rounded-full border border-neutral-700/50 whitespace-nowrap flex items-center gap-1 transition-colors disabled:opacity-50"
+                                >
+                                    <FiBellOff className={isSubscribing ? "animate-pulse" : ""} />
+                                </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Menu Navigazione / Filtri (Contenitore scrollabile su mobile) */}
+                        <nav className="flex-1 w-full p-4 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden overflow-y-hidden md:overflow-y-auto scrollbar-none md:mt-4">
+                            <div className="hidden md:block shrink-0">
+                                <p className="px-3 text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Categorie</p>
+                            </div>
+                            
+                            {categories.length > 0 && (
+                                <>
+                                    <button 
+                                        className={"flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group shrink-0 " + (selectedCategories.length === 0 ? "bg-white/10 text-white" : "")}
+                                        onClick={()=>(selectCategory("all"))}
+                                        >
+                                        <span className="group-hover:scale-110 transition-transform"><TbWorld /></span> <span className="md:inline">Tutte le Categorie</span>
+                                    </button>
+                                    
+                                    {categories.map((cat) => (
+                                        <button 
+                                            key={cat} 
+                                            className={`flex items-center gap-3 px-4 md:px-3 py-2 rounded-xl text-neutral-400 hover:bg-white/5 font-medium text-xs md:text-sm transition-all group shrink-0 ${selectedCategories.includes(cat) ? "bg-white/10 text-white" : ""}`}
+                                            onClick={()=>(
+                                                selectCategory(cat)
+                                            )}
+                                        >
+                                            <span className="group-hover:scale-110 transition-transform"><FiFolderMinus /></span> 
+                                            <span className="md:inline">{cat}</span>
+                                        </button>
+                                    ))}
+                                </>
+                            )}
+                        </nav>
+
+                        {/* Pulsanti Azione in basso alla Sidebar */}
+                        <div className="p-4 flex flex-row md:flex-col gap-2 mt-auto border-t border-white/5 md:border-t-0">
+                            {/* LOGICA CONDIZIONALE: Se c'è l'utente mostra SUGGERISCI, altrimenti mostra ACCEDI */}
+                            {user ? (
+                                <div className="flex-1 md:flex-none flex flex-col gap-2">
+                                    <p className="hidden md:block text-[10px] text-center text-neutral-500">
+                                        {user.displayName}
+                                    </p>
+                                    <button 
+                                        onClick={() => setIsSuggestOverlayOpen(true)}
+                                        className="w-full py-2.5 md:py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all border border-blue-500/20 flex items-center justify-center gap-2"
+                                    >
+                                        <FiPlus />
+                                        <span className="hidden md:inline"> SUGGERISCI VIDEO</span>
+                                        <span className="md:hidden">SUGGERISCI</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={
+                                        () => {
+                                            if(navigator.onLine) {
+                                                onLogin()
+                                            } else {
+                                                setAlert({ type: "error", message: "Sei offline. Connettiti a internet per accedere o registrarti." })
+                                            }
                                         }
                                     }
-                                }
-                                className="flex-1 md:flex-none py-2.5 md:py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
+                                    className="flex-1 md:flex-none py-2.5 md:py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
+                                >
+                                    <span><FiUser /></span>
+                                    <span className="hidden md:inline"> ACCEDI PER SUGGERIRE</span>
+                                    <span className="md:hidden">ACCEDI</span>
+                                </button>
+                            )}
+
+                            <button 
+                                onClick={onClose}
+                                className="flex-none md:w-full px-4 md:px-0 py-2.5 md:py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 text-xs font-bold rounded-xl transition-all border border-red-600/20"
                             >
-                                <span><FiUser /></span>
-                                <span className="hidden md:inline"> ACCEDI PER SUGGERIRE</span>
-                                <span className="md:hidden">ACCEDI</span>
+                                <span className="hidden md:inline">CHIUDI</span>
+                                <span className="md:hidden">✕</span>
                             </button>
-                        )}
+                        </div>
+                    </aside>
 
-                        <button 
-                            onClick={onClose}
-                            className="flex-none md:w-full px-4 md:px-0 py-2.5 md:py-3 bg-red-600/10 hover:bg-red-600/20 text-red-500 text-xs font-bold rounded-xl transition-all border border-red-600/20"
-                        >
-                            <span className="hidden md:inline">CHIUDI</span>
-                            <span className="md:hidden">✕</span>
-                        </button>
-                    </div>
-                </aside>
-
-                {/* --- AREA CONTENUTO DESTRA (Feed Video) --- */}
-                <main className="flex-1 flex flex-col bg-neutral-900/50 min-h-0">
-                    {/* Header superiore del contenuto */}
+                    {/* --- AREA CONTENUTO DESTRA (Feed Video) --- */}
+                    <main className="flex-1 flex flex-col bg-neutral-900/50 min-h-0 relative border border-white/10">
+                        {/* Header superiore del contenuto */}
                         <header className="hidden md:flex px-4 py-4 md:px-8 md:py-6 flex-row justify-between items-center sm:items-center gap-4 border-b border-white/5">
-                        <div>
-                            <h3 className="md:text-xl font-bold text-white uppercase tracking-tight">Discovery Feed</h3>
-                            <p className="text-[10px] md:text-xs text-neutral-500">Contenuti selezionati per {countryName}</p>
-                        </div>
-                        <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400">
-                            <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700">
-                                {filteredVideos.filter(v => v.status === "approved").length} Video trovati
-                            </span>
-                        </div>
-                    </header>
+                            <div>
+                                <h3 className="md:text-xl font-bold text-white uppercase tracking-tight">Discovery Feed</h3>
+                                <p className="text-[10px] md:text-xs text-neutral-500">Contenuti selezionati per {countryName}</p>
+                            </div>
+                            <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400">
+                                <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700">
+                                    {filteredVideos.filter(v => v.status === "approved").length} Video trovati
+                                </span>
+                            </div>
+                        </header>
 
-                    {/* Griglia Video con Scroll */}
-                    <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 pr-4 custom-scrollbar touch-pan-y">
-                        {countryVideos.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-                                {filteredVideos
-                                    .filter(v => v.status === "approved")
-                                    .map(v => (
-                                    <div 
-                                        key={v.id} 
-                                        className="group bg-neutral-800/40 rounded-2xl overflow-hidden border border-white/5 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg hover:shadow-blue-500/10"
-                                        onClick={() => {
-                                            if (navigator.onLine) {
-                                                window.open(v.url, "_blank");
-                                            }else{
-                                                setAlert({ type: "error", message: "Non puoi aprire il video mentre sei offline. Riconnettiti a internet e riprova." });
-                                            }
-                                        }}
-                                    >
-                                        <div className="relative aspect-video overflow-hidden">
-                                            {v.thumbnail ? (
-                                                <img src={v.thumbnail} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
-                                            ) : (
-                                                <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-4xl">🎬</div>
-                                            )}
-                                            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
-                                            <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shadow-lg">
-                                                    <span className="text-xs">▶</span>
+                        {/* Griglia Video con Scroll */}
+                        <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 pr-4 custom-scrollbar touch-pan-y">
+                            {countryVideos.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                                    {filteredVideos
+                                        .filter(v => v.status === "approved")
+                                        .map(v => (
+                                        <div 
+                                            key={v.id} 
+                                            className="group bg-neutral-800/40 rounded-2xl overflow-hidden border border-white/5 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg hover:shadow-blue-500/10"
+                                            onClick={() => {
+                                                if (navigator.onLine) {
+                                                    window.open(v.url, "_blank");
+                                                }else{
+                                                    setAlert({ type: "error", message: "Non puoi aprire il video mentre sei offline. Riconnettiti a internet e riprova." });
+                                                }
+                                            }}
+                                        >
+                                            <div className="relative aspect-video overflow-hidden">
+                                                {v.thumbnail ? (
+                                                    <img src={v.thumbnail} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-4xl">🎬</div>
+                                                )}
+                                                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                                                <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shadow-lg">
+                                                        <span className="text-xs">▶</span>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <div className="p-4">
+                                                <h4 className="text-sm font-bold text-neutral-200 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                                                    {v.title || "Video senza titolo"}
+                                                </h4>
+                                            </div>
                                         </div>
-                                        <div className="p-4">
-                                            <h4 className="text-sm font-bold text-neutral-200 line-clamp-2 group-hover:text-blue-400 transition-colors">
-                                                {v.title || "Video senza titolo"}
-                                            </h4>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
-                                <FiVideo className="text-6xl mb-4 text-neutral-300" />
-                                <p className="text-lg font-medium">Ancora nessun video qui.</p>
-                                <p className="text-sm">Sii il primo a contribuire alla guida!</p>
-                            </div>
-                        )}
-                    </div>
-                </main>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+                                    <FiVideo className="text-6xl mb-4 text-neutral-300" />
+                                    <p className="text-lg font-medium">Ancora nessun video qui.</p>
+                                    <p className="text-sm">Sii il primo a contribuire alla guida!</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* BOTTONE CHAT FLUTTUANTE AZZURRO */}
+                        <button
+                            onClick={() => setIsChatOpen(true)}
+                            className={`2xl:hidden absolute bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-600/30 transition-transform hover:scale-110 ${isChatOpen ? 'scale-0' : 'scale-100'}`}
+                            title="Apri commenti del paese"
+                        >
+                            <FiMessageCircle className="text-2xl" />
+                        </button>
+
+
+
+
+                    </main>
+                </div>
+                <div className="hidden 2xl:flex h-full md:h-[85vh] rounded-xl md:rounded-3xl flex-col md:flex-row overflow-hidden">
+                    <CountryChat 
+                        countryId={country.id}
+                        countryName={countryName}
+                        user={user}
+                        onClose={() => setIsChatOpen(false)}
+                        onAlert={(message, isSuccess) => setAlert({ type: isSuccess ? "success" : "error", message })}
+                    />
+                </div>
             </motion.div>
         </motion.div>
+        {/* IL NOSTRO NUOVO COMPONENTE */}
+        <AnimatePresence>
+            {(isChatOpen) && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-end 2xl:hidden"
+                    onClick={() => setIsChatOpen(false)}
+                >
+                    <CountryChat 
+                        countryId={country.id}
+                        countryName={countryName}
+                        user={user}
+                        onClose={() => setIsChatOpen(false)}
+                        onAlert={(message, isSuccess) => setAlert({ type: isSuccess ? "success" : "error", message })}
+                    />
+                </div>
+            )}
+        </AnimatePresence>
         <AnimatePresence>
             {isSuggestOverlayOpen && (
                 <SuggestVideoModal 

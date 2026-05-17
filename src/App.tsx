@@ -130,6 +130,7 @@ export default function App() {
               }
             }
             prevSubscriptionsRef.current = newSubscriptions;
+            console.log("Dati utente aggiornati in tempo reale:", userData);
 
             setUser({
               uid: firebaseUser.uid,
@@ -139,6 +140,8 @@ export default function App() {
               photoURL: firebaseUser.photoURL ?? "",
               stats: userData.stats || { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
               subscriptions: userData.subscriptions || [],
+              reportedComments: userData.reportedComments || [],
+              reportedVideos: userData.reportedVideos || [],
             });
           } else {
             // Se il documento non esiste, lo creiamo (fatto una sola volta)
@@ -150,6 +153,8 @@ export default function App() {
               photoURL: firebaseUser.photoURL ?? "",
               stats: { pendingVideos: 0, approvedVideos: 0, rejectedVideos: 0, suggestedVideos: 0 },
               subscriptions: [],
+              reportedComments: [],
+              reportedVideos: [],
             };
             setDoc(userDocRef, newUser);
             setUser(newUser);

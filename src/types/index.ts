@@ -1,7 +1,7 @@
 import type { Coordinates } from "@vnedyalk0v/react19-simple-maps";
 
 export interface Country {
-  id: string;       // codice numerico (es. "380")
+  id: number;       // codice numerico (es. "380")
   name: string;       // nome universale
   itName?: string;    // eventuale traduzione italiana (se diversa da name)
   flagUrl?: string;   // url bandiera PNG
@@ -42,6 +42,8 @@ export interface user{
   role: "user" | "moderator" | "admin";
   photoURL?: string; 
   subscriptions?: string[];
+  reportedComments?: string[]; // Array di ID dei commenti segnalati
+  reportedVideos?: string[]; // Array di ID dei video segnalati
   stats?: {
     pendingVideos: number;
     approvedVideos: number;
@@ -55,4 +57,14 @@ export interface Region {
   icon: React.ReactNode;
   coordinates: [number, number]; // [latitude, longitude]
   zoom: number;
+}
+
+export interface countryComment {
+  id: string;
+  countryCode: number | string;
+  userId: string;
+  userDisplayName: string;
+  userPhotoURL?: string
+  text: string;
+  createdAt: Date;
 }
