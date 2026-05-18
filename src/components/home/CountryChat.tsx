@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { FiAlertTriangle, FiMessageCircle, FiX, FiTrash2 } from "react-icons/fi";
-import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp, deleteDoc, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { FiAlertTriangle, FiMessageCircle, FiX } from "react-icons/fi";
+import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp, doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../../firebase";
 import type { user } from "../../types";
 
@@ -66,17 +66,6 @@ export default function CountryChat({ countryId, countryName, user, onClose, onA
         } catch (error) {
             console.error("Errore invio commento:", error);
             onAlert("Errore nell'invio del commento.", false);
-        }
-    };
-
-    const handleDeleteComment = async (commentId: string) => {
-        try {
-            await deleteDoc(doc(db, "comments", commentId));
-            fetchComments();
-            onAlert("Commento eliminato con successo!", true);
-        } catch (error) {
-            console.error("Errore eliminazione commento:", error);
-            onAlert("Errore nell'eliminazione del commento.", false);
         }
     };
 
@@ -146,22 +135,14 @@ export default function CountryChat({ countryId, countryName, user, onClose, onA
                         <div key={c.id} className="flex gap-2">
                             {user ? (
                                 <div className={`w-9 flex shrink-0 ${c.userId === user?.uid ? 'items-end' : 'items-start'} pt-4`}>
-                                    {user?.role === "admin" || user?.role === "moderator" ? (
-                                        <button 
-                                            className="text-neutral-500 border border-red-500/10 hover:bg-red-500/10 transition-colors rounded-full h-9 w-9 flex items-center justify-center" 
-                                            onClick={() => handleDeleteComment(c.id)}
-                                            title="Elimina commento"
-                                        >
-                                            <FiTrash2 className="text-red-500"/>
-                                        </button>
-                                    ) : <button 
-                                            className={`text-neutral-500 border border-yellow-500/10 ${user?.reportedComments?.includes(c.id) ? 'bg-yellow-500/10' : 'hover:bg-yellow-500/10'} transition-colors rounded-full h-9 w-9 flex items-center justify-center`}
-                                            onClick={() => handleReportComment(c.id)}
-                                            title="Segnala commento"
-                                        >
-                                            <FiAlertTriangle className="text-yellow-500"/>
-                                        </button>
-                                    }
+                                    <button 
+                                        className={`text-neutral-500 border border-yellow-500/10 ${user?.reportedComments?.includes(c.id) ? 'bg-yellow-500/10' : 'hover:bg-yellow-500/10'} transition-colors rounded-full h-9 w-9 flex items-center justify-center`}
+                                        onClick={() => handleReportComment(c.id)}
+                                        title="Segnala commento"
+                                    >
+                                        <FiAlertTriangle className="text-yellow-500"/>
+                                    </button>
+                                    
                                 </div>
                             ) : null }
                             
