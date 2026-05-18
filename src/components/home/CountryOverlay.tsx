@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { Country, video } from "../../types";
+import type { Country, user, video } from "../../types";
 import { collection, addDoc, doc, updateDoc, increment, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
 import SuggestVideoModal from "./SuggestVideoOverlay";
 import Alert from "../common/Alert";
-import { FiFolderMinus, FiPlus, FiVideo, FiUser, FiBell, FiBellOff } from "react-icons/fi";
+import { FiFolderMinus, FiPlus, FiVideo, FiUser, FiBell, FiBellOff, FiAlertTriangle } from "react-icons/fi";
 import { TbWorld } from "react-icons/tb";
 
 import { getToken } from "firebase/messaging";
@@ -20,7 +20,7 @@ interface CountryOverlayProps {
   country: Country;
   videos: video[];
   onClose: () => void;
-  user: any;
+  user: user | null;
   onLogin: () => void;
   flagUrl?: string;
 }
@@ -160,7 +160,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     country: country.name,
-                    uid: user.uid,
+                    uid: user?.uid,
                     token: currentToken
                 })
             });
@@ -225,29 +225,55 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
     };
 
     function selectCategory(cat: string) {
-            if (cat === "all") {
-                setSelectedCategories([]);
-                setFilteredVideos(videos);
-                return;
-            }
-
-            const nextSelected = selectedCategories.includes(cat)
-                ? selectedCategories.filter((c) => c !== cat)
-                : [...selectedCategories, cat];
-
-            setSelectedCategories(nextSelected);
-
-            if (nextSelected.length === 0) {
-                setFilteredVideos(videos);
-                return;
-            }
-
-            setFilteredVideos(
-                videos.filter((v) =>
-                    nextSelected.some((c) => v.categories?.includes(c))
-                )
-            );
+        if (cat === "all") {
+            setSelectedCategories([]);
+            setFilteredVideos(videos);
+            return;
         }
+
+        const nextSelected = selectedCategories.includes(cat)
+            ? selectedCategories.filter((c) => c !== cat)
+            : [...selectedCategories, cat];
+
+        setSelectedCategories(nextSelected);
+
+        if (nextSelected.length === 0) {
+            setFilteredVideos(videos);
+            return;
+        }
+
+        setFilteredVideos(
+            videos.filter((v) =>
+                nextSelected.some((c) => v.categories?.includes(c))
+            )
+        );
+    }
+
+    const handleReportVideo = (videoId: string) => {
+        try {
+            // Logica per segnalare un video (es. aggiungere l'ID del video a una lista di segnalazioni dell'utente)
+            if (!user) {
+                setAlert({ type: "error", message: "Devi accedere per segnalare un video." });
+                return;
+            }
+            if (user?.reportedVideos?.includes(videoId)) {
+                setAlert({ type: "error", message: "Hai già segnalato questo video." });
+                return;
+            }
+            if (user.reportedVideos && user.reportedVideos.length >= 5) {
+                setAlert({ type: "error", message: "Hai raggiunto il limite di 5 segnalazioni giornaliere." });
+                return;
+            }
+            const userRef = doc(db, "users", user.uid);
+            updateDoc(userRef, {
+                reportedVideos: [...(user.reportedVideos || []), videoId]
+            });
+            setAlert({ type: "success", message: "Video segnalato. Grazie per il tuo feedback!" });
+        } catch (error) {
+            console.error("Errore segnalazione video:", error);
+            setAlert({ type: "error", message: "Si è verificato un errore durante la segnalazione del video. Riprova più tardi." });
+        }
+    };
 
 
     return (
@@ -452,10 +478,17 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                                                     <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-4xl">🎬</div>
                                                 )}
                                                 <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
-                                                <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shadow-lg">
-                                                        <span className="text-xs">▶</span>
-                                                    </div>
+                                                <div className="absolute top-3 right-3  bg-neutral-900 rounded-full h-9 w-9 flex items-center justify-center">
+                                                    <button 
+                                                        className={`text-neutral-500 border border-yellow-500/10 ${user?.reportedVideos?.includes(v.id) ? 'bg-yellow-500/55' : 'hover:bg-yellow-500/10'} transition-colors rounded-full h-9 w-9 flex items-center justify-center`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleReportVideo(v.id);
+                                                        }}
+                                                        title="Segnala video"
+                                                    >
+                                                        <FiAlertTriangle className="text-yellow-500"/>
+                                                    </button>
                                                 </div>
                                             </div>
                                             <div className="p-4">
