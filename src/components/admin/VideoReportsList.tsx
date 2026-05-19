@@ -1,4 +1,3 @@
-
 import { FaExclamationTriangle } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { arrayRemove, collection, deleteDoc, doc, documentId, getDocs, query, updateDoc, where } from "firebase/firestore";
@@ -10,57 +9,71 @@ interface Reporter {
   email?: string;
 }
 
-interface ReportItem {
-  commentId: string;
-  commentText?: string;
+interface ReportVideoItem {
+  videoId: string;
+  title?: string;
+  thumbnailUrl?: string | null;
   countryCode?: number | string;
-  commenterName?: string;
+  submitterName?: string;
   reporters: Reporter[];
   countryName?: string;
-  countryFlagUrl?: string;
+  countryFlagUrl?: string | null;
 }
 
-export default function CommentReportsList() {
+export default function VideoReportsList() {
 
-    const [reports, setReports] = useState<ReportItem[]>([]);
-    const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState<ReportVideoItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadReports = async () => {
       try {
-        const q = query(collection(db, "users"), where("reportedComments", "!=", []));
+        const q = query(collection(db, "users"), where("reportedVideos", "!=", []));
         const pendingReports = await getDocs(q);
-        const fetchedReports: ReportItem[] = pendingReports.docs.map(doc => {
+        const fetchedReports: ReportVideoItem[] = pendingReports.docs.map(doc => {
           const data = doc.data();
-          return data.reportedComments.map((commentId: string) => ({
-            commentId: commentId,
+          return data.reportedVideos.map((videoId: string) => ({
+            videoId: videoId,
             reporters: [{ uid: doc.id, displayName: data.displayName }]
           }));
         }).flat();
 
         const reportPromises = fetchedReports.map(async (report) => {
           try {
-            const q = query(collection(db, "comments"), where(documentId(), "==", report.commentId));
+            const q = query(collection(db, "videos"), where(documentId(), "==", report.videoId));
             const snapshot = await getDocs(q);
-            console.log("e vuoto?", snapshot.empty, "commentId:", report.commentId);
             if (!snapshot.empty) {
-              const commentData: any = snapshot.docs[0].data();
-              console.log("Dati del commento recuperati:", commentData);
+              const videoData: any = snapshot.docs[0].data();
+              // Try to get submitter displayName
+              let submitterName = "Utente sconosciuto";
+              try {
+                if (videoData?.submittedBy) {
+                  const userQ = query(collection(db, "users"), where("uid", "==", videoData.submittedBy));
+                  const userSnap = await getDocs(userQ);
+                  if (!userSnap.empty) submitterName = (userSnap.docs[0].data() as any).displayName || submitterName;
+                }
+              } catch (e) {
+                console.error("Errore nel recupero del submitter:", e);
+              }
+
+              const videoMetadata = await fetch(`https://www.youtube.com/oembed?url=${videoData.url}&format=json`).then(res => res.json()).catch(() => null);
+
               return {
                 ...report,
-                commenterName: commentData.userDisplayName,
-                commentText: commentData.text,
-                countryCode: commentData.countryCode
-              } as ReportItem;
+                title: videoMetadata?.title  || "Titolo non disponibile",
+                thumbnailUrl: videoMetadata?.thumbnail_url  || null,
+                submitterName,
+                countryCode: videoData.countryCode
+              } as ReportVideoItem;
             }
             return report;
           } catch (error) {
-            console.error("Errore nel recupero dei dettagli del commento:", error);
+            console.error("Errore nel recupero dei dettagli del video:", error);
             return report;
           }
         });
 
-        const reportInfo: ReportItem[] = await Promise.all(reportPromises);
+        const reportInfo: ReportVideoItem[] = await Promise.all(reportPromises);
 
         const countryPromises = reportInfo.map(async (report) => {
           if (report.countryCode) {
@@ -92,9 +105,8 @@ export default function CommentReportsList() {
 
         setReports(reportInfoWithCountries);
         setLoading(false);
-        console.log("Segnalazioni commenti caricate:", reportInfoWithCountries);
       } catch (error) {
-        console.error("Errore nel caricamento delle segnalazioni commenti:", error);
+        console.error("Errore nel caricamento delle segnalazioni video:", error);
         setLoading(false);
       }
     };
@@ -103,28 +115,27 @@ export default function CommentReportsList() {
   }, []);
 
 
-  const handleRemoveComment = async (commentId: string) => {
-    try {      
-        await deleteDoc(doc(db, "comments", commentId));
-        handleCancelReport(commentId);
+  const handleRemoveVideo = async (videoId: string) => {
+    try {
+        await deleteDoc(doc(db, "videos", videoId));
+        handleCancelReport(videoId);
     } catch (error) {
-        console.error("Errore nella rimozione del commento:", error);
+        console.error("Errore nella rimozione del video:", error);
     }
   };
 
-  const handleCancelReport = async (commentId: string) => {
+  const handleCancelReport = async (videoId: string) => {
     try {
-        await getDocs(query(collection(db, "users"), where("reportedComments", "array-contains", commentId))).then(snapshot => {
+        await getDocs(query(collection(db, "users"), where("reportedVideos", "array-contains", videoId))).then(snapshot => {
             snapshot.forEach(doc => {
                 const userRef = doc.ref;
-                updateDoc(userRef, { reportedComments: arrayRemove(commentId) });
+                updateDoc(userRef, { reportedVideos: arrayRemove(videoId) });
             });
         });
-        setReports(prev => prev.filter(r => r.commentId !== commentId));
-    } catch (error) {        
+        setReports(prev => prev.filter(r => r.videoId !== videoId));
+    } catch (error) {
         console.error("Errore nell'annullamento della segnalazione:", error);
     }
-    
   };
 
   return (
@@ -135,7 +146,7 @@ export default function CommentReportsList() {
             <FaExclamationTriangle size={20} />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">Segnalazioni Commenti</h2>
+            <h2 className="text-xl font-bold text-white tracking-tight">Segnalazioni Video</h2>
             <p className="text-sm text-neutral-400 font-medium">{reports.length} segnalazione{reports.length !== 1 ? 'i' : ''}</p>
           </div>
         </div>
@@ -148,22 +159,32 @@ export default function CommentReportsList() {
       ) : reports.length === 0 ? (
         <div className="bg-[#1a1a1a] border-2 border-dashed border-white/5 rounded-3xl py-24 flex flex-col items-center justify-center text-neutral-500">
           <p className="text-lg font-bold text-neutral-400">Nessuna segnalazione</p>
-          <p className="text-sm">Non ci sono commenti segnalati da revisionare</p>
+          <p className="text-sm">Non ci sono video segnalati da revisionare</p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
           <>
             {reports.map(r => (
-              <div key={r.commentId} className="bg-neutral-900 p-4 rounded-2xl border border-white/5 flex flex-col gap-3">
+              <div key={r.videoId} className="bg-neutral-900 p-4 rounded-2xl border border-white/5 flex flex-col gap-3">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
                   <div className="flex-1 text-left">
-                    <div className="text-xs text-neutral-400 mb-1">Autore commento: <span className="text-sm text-white font-medium">{r.commenterName || 'Utente sconosciuto'}</span></div>
-                    <div className="text-sm text-neutral-200 mb-2">{r.commentText}</div>
+                    <div className="flex items-center gap-3 mb-2">
+                      {r.thumbnailUrl ? (
+                        <img src={r.thumbnailUrl} alt={r.title} className="w-28 h-16 object-cover rounded-md" onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')} />
+                      ) : (
+                        <div className="w-28 h-16 bg-neutral-800 rounded-md" />
+                      )}
+                      <div>
+                        <div className="text-xs text-neutral-400">Titolo:</div>
+                        <div className="text-sm text-neutral-200 font-medium">{r.title}</div>
+                        <div className="text-xs text-neutral-500">Proposto da: {r.submitterName || 'Utente sconosciuto'}</div>
+                      </div>
+                    </div>
                     <div className="text-xs text-neutral-500 mb-2">Segnalato da: {r.reporters.map(p => p.displayName || p.uid).join(', ')}</div>
                     <div className="text-[11px] text-neutral-500 flex items-center gap-2">
                       <span className="flex items-center">
                         <img
-                          src={r.countryFlagUrl}
+                          src={r.countryFlagUrl ?? ''}
                           alt={String(r.countryCode ?? '')}
                           className="w-6 h-4 object-cover rounded-sm"
                           onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = 'none')}
@@ -173,13 +194,13 @@ export default function CommentReportsList() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 shrink-0 md:items-end items-center w-full md:w-auto">
-                    <button onClick={() => handleRemoveComment(r.commentId)} className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl font-bold">Rimuovi Commento</button>
-                    <button onClick={() => handleCancelReport(r.commentId)} className="w-full bg-neutral-700 hover:bg-neutral-600 text-white px-4 py-2 rounded-xl">Annulla Segnalazione</button>
+                    <button onClick={() => handleRemoveVideo(r.videoId)} className="w-full bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-xl font-bold">Rimuovi Video</button>
+                    <button onClick={() => handleCancelReport(r.videoId)} className="w-full bg-neutral-700 hover:bg-neutral-600 text-white px-4 py-2 rounded-xl">Annulla Segnalazione</button>
                   </div>
                 </div>
-              </div>
+            </div>
             ))}
-          </>
+            </>
         </div>
       )}
     </div>

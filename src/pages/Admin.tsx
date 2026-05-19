@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, query, where, getDocs, updateDoc, doc, increment, arrayUnion, setDoc } from "firebase/firestore";
 import CommentReportsList from "../components/admin/CommentReportsList";
+import VideoReportsList from "../components/admin/VideoReportsList";
 import type { user, video } from "../types/index"
 import Header from "../components/common/Header";
 import VideoList from "../components/admin/VideoList";
@@ -214,8 +215,8 @@ export default function Admin({ user }: { user: user | null }) {
           />
         </div>
         <div className="grid grid-cols-1 gap-6">
-          <CommentReportsList
-          />
+          <VideoReportsList />
+          <CommentReportsList />
         </div>
         {user.role === "admin" && (
           <div className="grid grid-cols-1 gap-6">
