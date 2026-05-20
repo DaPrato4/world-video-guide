@@ -42,10 +42,8 @@ export default function CommentReportsList() {
           try {
             const q = query(collection(db, "comments"), where(documentId(), "==", report.commentId));
             const snapshot = await getDocs(q);
-            console.log("e vuoto?", snapshot.empty, "commentId:", report.commentId);
             if (!snapshot.empty) {
-              const commentData: any = snapshot.docs[0].data();
-              console.log("Dati del commento recuperati:", commentData);
+              const commentData = snapshot.docs[0].data() as { userDisplayName: string; text: string; countryCode: number | string };
               return {
                 ...report,
                 commenterName: commentData.userDisplayName,
@@ -92,7 +90,6 @@ export default function CommentReportsList() {
 
         setReports(reportInfoWithCountries);
         setLoading(false);
-        console.log("Segnalazioni commenti caricate:", reportInfoWithCountries);
       } catch (error) {
         console.error("Errore nel caricamento delle segnalazioni commenti:", error);
         setLoading(false);

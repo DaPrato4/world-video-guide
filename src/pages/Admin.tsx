@@ -111,7 +111,7 @@ export default function Admin({ user }: { user: user | null }) {
       }
 
       const videoRef = doc(db, "videos", videoId);
-      const updateData: any = { status: newStatus };
+      const updateData: { [key: string]: any } = { status: newStatus };
       if (newStatus === "rejected" && reason) {
         updateData.rejectionReason = reason;
       }

@@ -22,9 +22,9 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
       coordinates: [40, 15],
       zoom: 5,
   }
-  const [selectedRegion, setSelectedRegion] = useState<any>(europe);
+  const [selectedRegion, setSelectedRegion] = useState<Region>(europe);
 
-  const [geoData, setGeoData] = useState(null);
+  const [geoData, setGeoData] = useState<any>(null);
   const [countriesData, setCountriesData] = useState<Country[]>([]);
 
   useEffect(() => {

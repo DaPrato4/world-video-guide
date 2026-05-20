@@ -39,7 +39,7 @@ export default function SuggestVideoModal({  onClose, onSubmit, countryName }: S
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((current) =>
-      current.includes(category)
+      current.some(item => item.toLocaleLowerCase() === category.toLocaleLowerCase())
         ? current.filter((item) => item !== category)
         : [...current, category]
     );
@@ -51,7 +51,9 @@ export default function SuggestVideoModal({  onClose, onSubmit, countryName }: S
     if (!nextCategory) return;
 
     setSelectedCategories((current) =>
-      current.includes(nextCategory) ? current : [...current, nextCategory]
+      current.some((item) => item.toLocaleLowerCase() === nextCategory)
+        ? current
+        : [...current, nextCategory]
     );
     setCustomCategory("");
   };

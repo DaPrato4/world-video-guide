@@ -28,7 +28,10 @@ export default function CategoryEditor({
     const nextCategory = customCategory.trim().toLowerCase();
     if (!nextCategory) return;
 
-    setEditedCategories((current) => (current.includes(nextCategory) ? current : [...current, nextCategory]));
+    setEditedCategories((current) =>
+      current.some((item) => item.toLocaleLowerCase() === nextCategory) 
+      ? current 
+      : [...current, nextCategory]);
     setCustomCategory("");
   };
 

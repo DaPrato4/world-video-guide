@@ -58,13 +58,3 @@ export interface Region {
   coordinates: [number, number]; // [latitude, longitude]
   zoom: number;
 }
-
-export interface countryComment {
-  id: string;
-  countryCode: number | string;
-  userId: string;
-  userDisplayName: string;
-  userPhotoURL?: string
-  text: string;
-  createdAt: Date;
-}

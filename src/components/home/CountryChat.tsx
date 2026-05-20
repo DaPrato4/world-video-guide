@@ -52,6 +52,12 @@ export default function CountryChat({ countryId, countryName, user, onClose, onA
         e.preventDefault();
         if (!user || !newComment.trim()) return;
 
+        //controllo connessione internet
+        if (!navigator.onLine) {
+            onAlert("Sei offline. Riprova quando sei connesso a internet.", false);
+            return;
+        }
+
         try {
             await addDoc(collection(db, "comments"), {
                 countryCode: countryId,

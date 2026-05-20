@@ -7,12 +7,11 @@ import {
     signInWithPopup,
     GoogleAuthProvider,
     GithubAuthProvider,
-    OAuthProvider,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaApple } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
 import { IoIosMail } from "react-icons/io";
 import Alert from "./Alert";
 
@@ -58,7 +57,7 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
         };
     }, [isOpen]);
 
-    const handleProviderSignIn = async (providerName: "google" | "github" | "apple") => {
+    const handleProviderSignIn = async (providerName: "google" | "github") => {
         setError(null);
         try {
             if (providerName === "google") {
@@ -67,18 +66,14 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
             } else if (providerName === "github") {
                 const provider = new GithubAuthProvider();
                 await signInWithPopup(auth, provider);
-            } else if (providerName === "apple") {
-                const provider = new OAuthProvider("apple.com");
-                provider.addScope("email");
-                provider.addScope("name");
-                await signInWithPopup(auth, provider);
             }
             setAlert({ type: "success", message: "Login effettuato con successo!" });
             setShouldRender(false);
             setTimeout(onClose, 300);
-        } catch (err: any) {
-            console.error("Auth provider error:", err);
-            setError(err?.message || "Errore durante il login");
+        } catch (err) {
+            const error = err as { message?: string };
+            console.error("Auth provider error:", error);
+            setError(error?.message || "Errore durante il login");
             setAlert({ type: "error", message: "Errore durante il login" });
         }
     };
@@ -90,9 +85,10 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
             setShouldRender(false);
             setTimeout(onClose, 300);
             setAlert({ type: "success", message: "Login effettuato con successo!" });
-        } catch (err: any) {
-            console.error("Email login error:", err);
-            setError(err?.message || "Errore login con email");
+        } catch (err) {
+            const error = err as { message?: string };
+            console.error("Email login error:", error);
+            setError(error?.message || "Errore login con email");
             setAlert({ type: "error", message: "Errore durante il login" });
         }
     };
@@ -107,9 +103,10 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
             await createUserWithEmailAndPassword(auth, email, password);
             setShouldRender(false);
             setTimeout(onClose, 300);
-        } catch (err: any) {
+        } catch (err) {
+            const error = err as { message?: string };
             console.error("Email register error:", err);
-            setError(err?.message || "Errore registrazione");
+            setError(error?.message || "Errore registrazione");
         }
     };
 
@@ -159,13 +156,6 @@ export default function LoginOverlay({ isOpen, onClose }: LoginOverlayProps) {
                                 onClick={() => handleProviderSignIn('github')}
                             >
                                 <FaGithub size={20} /> Accedi con GitHub
-                            </button>
-
-                            <button
-                                className="w-full bg-black/90 text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center justify-center gap-2 ring-1 ring-white/10 hover:bg-black"
-                                onClick={() => handleProviderSignIn('apple')}
-                            >
-                                <FaApple size={20} /> Accedi con Apple
                             </button>
 
                             <div className="w-full">
