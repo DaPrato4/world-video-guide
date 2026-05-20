@@ -1,4 +1,4 @@
-import { FaPlay, FaExclamationCircle } from "react-icons/fa";
+import { FaPlay } from "react-icons/fa";
 import type { video } from "../../types/index";
 
 interface VideoCardProps {
@@ -81,21 +81,6 @@ export default function VideoCard({ video, deleting, onDelete }: VideoCardProps)
             </span>
                                     
           </div>
-
-          {/* Motivo del rifiuto (se presente) */}
-          {video.status === "rejected" && video.rejectionReason && (
-            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex gap-3 items-start animate-in fade-in slide-in-from-top-1 duration-300">
-              <FaExclamationCircle className="text-red-400 shrink-0 mt-0.5" />
-              <div className="flex flex-col gap-1">
-                <p className="text-[11px] font-bold text-red-300 uppercase tracking-wider">
-                  Motivazione del rifiuto
-                </p>
-                <p className="text-xs text-red-100/80 leading-relaxed italic">
-                  "{video.rejectionReason}"
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </a>
 
