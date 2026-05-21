@@ -7,6 +7,7 @@ import { db } from "../../firebase";
 import SuggestVideoModal from "./SuggestVideoOverlay";
 import Alert from "../common/Alert";
 import { FiFolderMinus, FiPlus, FiVideo, FiUser, FiBell, FiBellOff, FiAlertTriangle } from "react-icons/fi";
+import { FaPlay } from "react-icons/fa";
 import { TbWorld } from "react-icons/tb";
 
 import { getToken } from "firebase/messaging";
@@ -336,7 +337,7 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                                 <div className="w-8 md:w-12 h-1 bg-blue-500 rounded-full mt-1 md:mt-3 mx-0 md:mx-auto shrink-0"></div>
                             </div>
                             <div className="flex gap-2 text-[10px] md:text-xs text-neutral-400 mt-2">
-                                <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap flex items-center">
+                                <span className="bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 whitespace-nowrap items-center hidden sm:flex">
                                     {filteredVideos.filter(v => v.status === "approved").length} Video
                                 </span>
                                 
@@ -475,9 +476,14 @@ export default function CountryOverlay({ country, videos : videosWithoutMetadata
                                                 {v.thumbnail ? (
                                                     <img src={v.thumbnail} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
                                                 ) : (
-                                                    <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-4xl">🎬</div>
+                                                    <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-4xl"><FiVideo /></div>
                                                 )}
-                                                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                                                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+                                                    <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full border border-white/30 shadow-2xl group-hover:scale-100 transition-transform duration-300">
+                                                        <FaPlay className="text-white text-xl ml-1" />
+                                                    </div>
+                                                </div>
+                                                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
                                                 <div className="absolute top-3 right-3  bg-neutral-900 rounded-full h-9 w-9 flex items-center justify-center">
                                                     <button 
                                                         className={`text-neutral-500 border border-yellow-500/10 ${user?.reportedVideos?.includes(v.id) ? 'bg-yellow-500/55' : 'hover:bg-yellow-500/10'} transition-colors rounded-full h-9 w-9 flex items-center justify-center`}
