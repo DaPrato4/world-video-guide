@@ -63,7 +63,6 @@ export default function VideoCard({ video, updating, officialCategories, onUpdat
             href={video.url}
             target="_blank"
             rel="noopener noreferrer"
-            // MODIFICA: Aggiunto self-center per forzarla al centro verticale del div padre
             className="w-full sm:w-32 aspect-video sm:h-18 shrink-0 overflow-hidden rounded-lg bg-neutral-900 border border-white/5 group-hover:border-blue-500/50 transition-colors relative block self-center"
           >
             <img

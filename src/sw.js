@@ -27,7 +27,6 @@ registerRoute(
 );
 
 // 2. NAVIGATE FALLBACK: Se sei offline e ricarichi una pagina, mostra index.html
-// (Sostituisce navigateFallback: '/index.html')
 const fallbackHandler = () => fetch('/index.html');
 const navigationRoute = new NavigationRoute(fallbackHandler, {
   allowlist: [/^(?!\/__).*/],

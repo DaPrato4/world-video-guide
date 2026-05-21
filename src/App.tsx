@@ -13,7 +13,6 @@ import Alert from "./components/common/Alert";
 import { getMessaging, onMessage } from "firebase/messaging";
 
 
-// App.tsx
 export default function App() {
   const [user, setUser] = useState<user | null>(null);
   const [videos, setVideos] = useState<video[]>([]);

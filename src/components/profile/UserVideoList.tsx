@@ -71,7 +71,7 @@ export default function UserVideoList({
 
             let datacountry;
             try {
-              const countryCode = String(video.countryCode).padStart(3, '0'); // Assicurati che il codice sia a 3 cifre
+              const countryCode = String(video.countryCode).padStart(3, '0'); // codice di 3 cifre
               const rescountry = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
               if (!rescountry.ok) {
                 throw new Error(`HTTP error! status: ${rescountry.status}`);

@@ -62,7 +62,7 @@ export default function Home({ user, videos }: { user: user | null; videos: vide
       const latlng = found?.capitalInfo?.latlng;
       const coordinates =
           Array.isArray(latlng) && latlng.length === 2
-              ? [latlng[0], latlng[1]] // [lng, lat]
+              ? [latlng[0], latlng[1]]
               : undefined;
 
       const nextCountry: Country = {

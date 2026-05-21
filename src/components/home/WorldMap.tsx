@@ -10,7 +10,7 @@ interface Region {
 
 export default function WorldMap({videos, SelectedCountry, SelectCountry, OverCountry, countriesData, geoData, selectedRegion}: WorldMapProps & { selectedRegion?: Region | null }) {
 
-    const baseColor = "purple"; // Puoi scegliere un colore di base per la scala
+    const baseColor = "blue";
 
     // Determina se siamo su mobile con useState per tracciare il cambiamento
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1000);

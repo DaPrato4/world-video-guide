@@ -44,7 +44,6 @@ export default function VideoReportsList() {
             const snapshot = await getDocs(q);
             if (!snapshot.empty) {
               const videoData: any = snapshot.docs[0].data();
-              // Try to get submitter displayName
               let submitterName = "Utente sconosciuto";
               try {
                 if (videoData?.submittedBy) {
