@@ -28,7 +28,7 @@ export default defineConfig({
         short_name: 'WorldGuide',
         description: 'Esplora video da tutto il mondo',
         theme_color: '#171717',
-        display: 'fullscreen',
+        display: 'standalone',
         start_url: '/',
         icons: [
           {

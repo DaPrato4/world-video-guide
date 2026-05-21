@@ -4,6 +4,10 @@
 
 L'applicazione è concepita come una **Progressive Web App (PWA)**, garantendo un'esperienza nativa su dispositivi mobili, funzionalità offline e notifiche push per un coinvolgimento continuo.
 
+## Sito Online
+
+Il sito è attualmente online grazie a **Firebase Hosting** e puoi provarlo al seguente link: [https://prova-mappa-f1d90.web.app/](https://prova-mappa-f1d90.web.app/).
+
 ## Architettura e Stack Tecnologico
 
 Il progetto si basa su un'architettura client-server disaccoppiata, con un frontend reattivo e un backend serverless robusto.
