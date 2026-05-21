@@ -18,9 +18,11 @@ export default function Header({ user, page }: { user: user | null; page: string
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
 
   const logOut = async () => {
+    setIsLoggingOut(true);
     // 1. Fase di pulizia: Disiscrizione da tutti i Topic
     if (user) {
       try {
@@ -52,6 +54,7 @@ export default function Header({ user, page }: { user: user | null; page: string
       console.error("Errore disconnessione:", error);
       setAlert({ type: "error", message: "Si è verificato un errore durante la disconnessione." });
     }
+    setIsLoggingOut(false);
   };
 
   return (
@@ -104,7 +107,12 @@ export default function Header({ user, page }: { user: user | null; page: string
         
         <div className="flex items-center gap-3">
           {user ? (
-            <UserMenu user={user} onLogout={() => logOut()} align="right" />
+            <UserMenu
+              user={user}
+              onLogout={() => logOut()}
+              align="right"
+              isLoggingOut={isLoggingOut}
+            />
           ) : (
             <button 
               onClick={() => {

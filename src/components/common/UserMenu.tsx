@@ -9,9 +9,45 @@ interface Props {
   onLogout: () => void;
   // optional alignment if the nav places it to the left
   align?: "right" | "left";
+  isLoggingOut?: boolean;
 }
 
-export default function UserMenu({ user, onLogout, align = "right" }: Props) {
+function AvatarContent({
+  user,
+  imgError,
+  initials,
+  isLoggingOut,
+  onImgError,
+}: {
+  user: UserType;
+  imgError: boolean;
+  initials: string;
+  isLoggingOut?: boolean;
+  onImgError: () => void;
+}) {
+  if (isLoggingOut) {
+    return (
+      <span className="inline-flex h-full w-full items-center justify-center">
+        <span className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+      </span>
+    );
+  }
+
+  if (user.photoURL && !imgError) {
+    return (
+      <img
+        src={user.photoURL}
+        alt={user.displayName || "avatar"}
+        className="w-full h-full object-cover"
+        onError={onImgError}
+      />
+    );
+  }
+
+  return <span className="text-sm font-medium text-white">{initials || <FiUser />}</span>;
+}
+
+export default function UserMenu({ user, onLogout, align = "right", isLoggingOut }: Props) {
   const [open, setOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -39,19 +75,17 @@ export default function UserMenu({ user, onLogout, align = "right" }: Props) {
         aria-haspopup="true"
         aria-expanded={open}
         onClick={() => setOpen(v => !v)}
-        className="inline-flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-neutral-700 hover:ring-2 hover:ring-white/10 transition"
+        disabled={isLoggingOut}
+        className="inline-flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-neutral-700 hover:ring-2 hover:ring-white/10 transition disabled:cursor-not-allowed disabled:opacity-80"
         title={user.displayName || user.email}
       >
-        {user.photoURL && !imgError ? (
-          <img 
-            src={user.photoURL} 
-            alt={user.displayName || "avatar"} 
-            className="w-full h-full object-cover"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <span className="text-sm font-medium text-white">{initials || <FiUser />}</span>
-        )}
+        <AvatarContent
+          user={user}
+          imgError={imgError}
+          initials={initials}
+          isLoggingOut={isLoggingOut}
+          onImgError={() => setImgError(true)}
+        />
       </button>
 
       <AnimatePresence>
@@ -67,16 +101,13 @@ export default function UserMenu({ user, onLogout, align = "right" }: Props) {
               <div >
                 <div className="px-4 py-3 flex items-center justify-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-700 flex items-center justify-center">
-                    {user.photoURL && !imgError ? (
-                        <img 
-                          src={user.photoURL} 
-                          alt={user.displayName || "avatar"} 
-                          className="w-full h-full object-cover"
-                          onError={() => setImgError(true)}
-                        />
-                    ) : (
-                        <span className="text-sm font-medium text-white">{initials || <FiUser />}</span>
-                    )}
+                    <AvatarContent
+                      user={user}
+                      imgError={imgError}
+                      initials={initials}
+                      isLoggingOut={isLoggingOut}
+                      onImgError={() => setImgError(true)}
+                    />
                     </div>
                     <div className="flex flex-col min-w-0 align-bottom">
                     <div className="font-medium truncate">{user.displayName || user.email}</div>
