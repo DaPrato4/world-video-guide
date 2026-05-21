@@ -24,11 +24,11 @@ Il progetto si basa su un'architettura client-server disaccoppiata, con un front
 
 ### Backend & Servizi
 
-*   **Firebase**: Una piattaforma completa di Google che fornisce i seguenti servizi:
-    *   **Firestore**: Un database NoSQL flessibile e scalabile utilizzato per memorizzare tutti i dati dell'applicazione, come utenti, video, commenti, categorie e segnalazioni. Le query in tempo reale garantiscono che l'interfaccia utente sia sempre sincronizzata con il database.
-    *   **Firebase Authentication**: Gestisce l'autenticazione degli utenti tramite provider multipli (Google, GitHub, Email/Password) in modo sicuro e scalabile.
-    *   **Firebase Cloud Messaging**: Utilizzato per inviare notifiche push multi-dispositivo, permettendo agli utenti di rimanere aggiornati sui nuovi video nei paesi che seguono.
-*   **Render (Backend Service)**: Un servizio di hosting per un piccolo backend Node.js/Express che gestisce la logica di iscrizione e invio delle notifiche push, interfacciandosi con Firebase Cloud Messaging.
+* **Firebase**: Una piattaforma completa di Google che fornisce i seguenti servizi:
+  * **Firestore**: Un database NoSQL flessibile e scalabile utilizzato per memorizzare tutti i dati dell'applicazione, come utenti, video, commenti, categorie e segnalazioni. Le query in tempo reale garantiscono che l'interfaccia utente sia sempre sincronizzata con il database.
+  * **Firebase Authentication**: Gestisce l'autenticazione degli utenti tramite provider multipli (Google, GitHub, Email/Password) in modo sicuro e scalabile.
+  * **Firebase Cloud Messaging**: Utilizzato per inviare notifiche push multi-dispositivo, permettendo agli utenti di rimanere aggiornati sui nuovi video nei paesi che seguono.
+* **Backend Node.js/Express**: Un servizio backend dedicato (ospitato su Render/locale) che gestisce la logica di iscrizione e l'invio protetto delle notifiche push, interfacciandosi con le API di Firebase Admin.
 
 ## Feature Principali
 
@@ -56,48 +56,50 @@ L'applicazione offre un'ampia gamma di funzionalità pensate per la community e 
 *   **Gestione delle Segnalazioni**: Liste separate per visualizzare e gestire i commenti e i video segnalati dagli utenti.
 *   **Gestione Utenti**: Visualizzazione di tutti gli utenti registrati con la possibilità di modificarne il ruolo (user, moderator, admin).
 
-## Istruzioni per l'Installazione Locale
+## Istruzioni per l'Avvio Locale
 
-Per eseguire il progetto in locale, segui questi passaggi:
+Il progetto include sia la User Interface (Frontend) che le API (Backend) all'interno dello stesso repository. Il frontend si trova nella root principale, mentre il servizio backend per le notifiche risiede nella cartella `/backend`.
 
-1.  **Clona il repository:**
-    ```bash
-    git clone https://github.com/DaPrato4/world-video-guide
-    cd world-video-guide
-    ```
+Segui questi passaggi per avviare l'intero ambiente di sviluppo:
 
-2.  **Installa le dipendenze:**
-    Assicurati di avere Node.js (versione 18 o successiva) e npm installati.
-    ```bash
-    npm install
-    ```
+1. **Clona il repository:**
 
-3.  **Configura le variabili d'ambiente:**
-    Crea un file `.env` nella root del progetto e copia il contenuto del template qui sotto.
+   ```bash
+   git clone https://github.com/DaPrato4/world-video-guide
+   cd world-video-guide
+   ```
 
-4.  **Avvia il server di sviluppo:**
-    ```bash
-    npm run dev
-    ```
-    L'applicazione sarà disponibile all'indirizzo `http://localhost:5173`.
+2. **Configura le variabili d'ambiente (.env):**
+   Crea un file `.env.local` nella root del progetto (dove si trova React).
 
-### Template per il file `.env`
+   ```env
+   # Configurazione Frontend (React/Firebase)
+   VITE_FIREBASE_API_KEY="YOUR_API_KEY"
+   VITE_FIREBASE_AUTH_DOMAIN="YOUR_AUTH_DOMAIN"
+   VITE_FIREBASE_PROJECT_ID="YOUR_PROJECT_ID"
+   VITE_FIREBASE_STORAGE_BUCKET="YOUR_STORAGE_BUCKET"
+   VITE_FIREBASE_MESSAGING_SENDER_ID="YOUR_MESSAGING_SENDER_ID"
+   VITE_FIREBASE_APP_ID="YOUR_APP_ID"
+   VITE_FIREBASE_VAPID_KEY="YOUR_VAPID_KEY_FOR_FCM"
+   ```
 
-Crea un file chiamato `.env` nella directory principale del progetto e inserisci le tue credenziali Firebase.
+3. **Avvia il Backend (API):**
+   Apri un terminale e avvia il server Node.js:
 
-```env
-# Firebase Configuration
-VITE_FIREBASE_API_KEY="YOUR_API_KEY"
-VITE_FIREBASE_AUTH_DOMAIN="YOUR_AUTH_DOMAIN"
-VITE_FIREBASE_PROJECT_ID="YOUR_PROJECT_ID"
-VITE_FIREBASE_STORAGE_BUCKET="YOUR_STORAGE_BUCKET"
-VITE_FIREBASE_MESSAGING_SENDER_ID="YOUR_MESSAGING_SENDER_ID"
-VITE_FIREBASE_APP_ID="YOUR_APP_ID"
-VITE_FIREBASE_VAPID_KEY="YOUR_VAPID_KEY_FOR_FCM"
+   ```bash
+   cd backend
+   npm install
+   node index.js
+   ```
 
+4. **Avvia il Frontend (UI):**
+   Apri un nuovo terminale, assicurati di essere nella root del progetto (world-video-guide) e avvia React:
 
-```
+   ```bash
+   npm install
+   npm run dev
+   ```
 
----
+L'applicazione sarà ora disponibile all'indirizzo [http://localhost:5173](http://localhost:5173).
 
 Questo progetto rappresenta una dimostrazione completa di come integrare diverse tecnologie moderne per creare un'applicazione web ricca di funzionalità, scalabile e manutenibile.
